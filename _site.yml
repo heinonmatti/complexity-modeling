@@ -1,0 +1,29 @@
+name: Investigating complexity and mechanisms of the LMI intervention
+author: Matti Heino
+output_dir: docs
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    collapsed: no
+    theme: readable
+    highlight: tango
+    df_print: paged
+    paged_print: true
+    code_folding: hide
+    lib_dir: site_libs
+    self_contained: no
+navbar:
+  title: Visualising baseline characteristics
+  left:
+  - text: About
+    href: index.html
+  - text: Manuscript
+    href: baseline-manuscript.html
+  - text: Descriptives
+    href: baseline-supplement.html
+  - text: Networks
+    href: baseline-networks.html
+  - text: Data setup code
+    href: https://raw.githubusercontent.com/heinonmatti/baseline-visu/master/baseline-datasetup.R
