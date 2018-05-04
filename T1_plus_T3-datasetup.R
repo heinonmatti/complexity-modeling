@@ -8,12 +8,11 @@
 if (!require(pacman)) install.packages("pacman")
 #library(pacman)
 
+
+
 CRANpacks <- c("viridis", "bookdown", "knitr", "tidyverse", "haven", "lme4", 
-               "userfriendlyscience", "sm", "sjstats", "gridExtra", "igraph", 
-               "devtools","EstimateGroupNetwork", "bootnet", "qgraph","rstanarm",
-               "brms", "mlmRev", "rstan", "sandwich", "visreg", "broom", 
-               "EstimateGroupNetwork", "bootnet", "qgraph", # for networks
-               "corrgram", "sjPlot", "DT") 
+               "userfriendlyscience", "devtools", "corrgram", "sjPlot", "DT",
+               "lavaan", "ggplot2", "reshape2", "semPlot") 
 
 instpacks <- setdiff(CRANpacks, pacman::p_library())
 
@@ -21,10 +20,10 @@ instpacks <- setdiff(CRANpacks, pacman::p_library())
 if (length(instpacks)>0) install.packages(instpacks)
 
 if (!require(papaja)) pacman::p_install_gh("crsh/papaja")
-if (!require(ggridges)) pacman::p_install_gh("clauswilke/ggridges")
-if (!require(brmstools)) pacman::p_install_gh("mvuorre/brmstools")
-if (!require(NetworkComparisonTest)) pacman::p_install_gh("sachaepskamp/NetworkComparisonTest")
-if (!require(ggstatsplot)) pacman::p_install_gh("IndrajeetPatil/ggstatsplot")
+# if (!require(ggridges)) pacman::p_install_gh("clauswilke/ggridges")
+# if (!require(brmstools)) pacman::p_install_gh("mvuorre/brmstools")
+# if (!require(NetworkComparisonTest)) pacman::p_install_gh("sachaepskamp/NetworkComparisonTest")
+# if (!require(ggstatsplot)) pacman::p_install_gh("IndrajeetPatil/ggstatsplot")
 if (!require(patchwork)) pacman::p_install_gh("thomasp85/patchwork") # so that plot1 + plot2 creates a single side-by-side plot
 
 # Packages for the figures which show Bayesian credible intervals of classes
@@ -75,154 +74,154 @@ lmi <- haven::read_sav("data/LMI_data_korjattu_syntaksilla_nimetpoistettu - skan
 
 # Changing the sm density compare function to allow different color of the band of equality. Copied from https://web.archive.org/web/20170222214214/https://stat.ethz.ch/pipermail/r-help//2009-March/416920.html.
 
-sm.density.compare2 <- function (x, group, h, model = "none", bandcol =
-                                   'cyan', lwd = par("lwd"), usePolyg = NULL, asp=NA, 
-                                 xlab=opt$xlab, ylab=opt$ylab, ...) 
-{
-  if (!is.vector(x)) 
-    stop("sm.density.compare can handle only 1-d data")
-  opt <- sm:::sm.options(list(...))
-  sm:::replace.na(opt, ngrid, 50)                 
-  ## These all changed from replace.na() --> sm:::
-  sm:::replace.na(opt, display, "line")
-  sm:::replace.na(opt, xlab, deparse(substitute(x)))
-  sm:::replace.na(opt, ylab, "Density")
-  sm:::replace.na(opt, xlim, c(min(x) - diff(range(x))/4, max(x) + 
-                                 diff(range(x))/4))
-  sm:::replace.na(opt, eval.points, seq(opt$xlim[1], opt$xlim[2], 
-                                        length = opt$ngrid))
-  if (is.na(opt$band)) {
-    if (model == "none") 
-      opt$band <- FALSE
-    else opt$band <- TRUE
-  }
-  if ((model == "none") && opt$band) 
-    opt$band <- FALSE
-  band <- opt$band
-  ngrid <- opt$ngrid
-  xlim <- opt$xlim
-  nboot <- opt$nboot
-  y <- x
-  if (is.na(opt$test)) {
-    if (model == "none") 
-      opt$test <- FALSE
-    else opt$test <- TRUE
-  }
-  if ((model == "none") && opt$test) 
-    opt$test <- FALSE
-  test <- opt$test
-  if (opt$display %in% "none") 
-    band <- FALSE
-  fact <- factor(group)
-  fact.levels <- levels(fact)
-  nlev <- length(fact.levels)
-  ni <- table(fact)
-  if (band & (nlev > 2)) {
-    cat("Reference band available to compare two groups only.", 
-        "\n")
-    band <- FALSE
-  }
-  if (length(opt$lty) < nlev) 
-    opt$lty <- 1:nlev
-  if (length(opt$col) < nlev) 
-    opt$col <- 2:(nlev + 1)
-  if (missing(h)) 
-    h <- sm:::h.select(x, y = NA, group = group, ...)
-  opt$band <- band
-  opt$test <- test
-  estimate <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-  se <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-  for (i in 1:nlev) {
-    sm <- sm:::sm.density(y[fact == fact.levels[i]], h = h, display = "none", 
-                          eval.points = opt$eval.points)
-    estimate[i, ] <- sm$estimate
-    se[i, ] <- sm$se
-  }
-  eval.points <- sm$eval.points
-  if (!(opt$display %in% "none" | band)) {
-    plot(xlim, c(0, 1.1 * max(as.vector(estimate))), xlab = opt$xlab, 
-         ylab = opt$ylab, type = "n")
-    #for (i in 1:nlev) lines(eval.points, estimate[i, ], lty = opt$lty[i], 
-    #    col = opt$col[i])
-    for (i in 1:nlev) lines(eval.points, estimate[i, ], lty =
-                              opt$lty[i],   ## lwd hacked in
-                            col = opt$col[i], lwd = lwd[i])
-  }
-  est <- NULL
-  p <- NULL
-  if (model == "equal" & test) {
-    if (nlev == 2) {
-      ts <- sum((estimate[1, ] - estimate[2, ])^2)
-    }
-    else {
-      sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
-                                 ngrid = opt$ngrid, display = "none")$estimate
-      ts <- 0
-      for (i in 1:nlev) ts <- ts + ni[i] * sum((estimate[i, 
-                                                         ] - sm.mean)^2)
-    }
-    p <- 0
-    est.star <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-    for (iboot in 1:nboot) {
-      ind <- (1:length(y))
-      for (i in 1:nlev) {
-        indi <- sample((1:length(ind)), ni[i])
-        est.star[i, ] <- sm:::sm.density(y[ind[indi]], h = h, 
-                                         ngrid = opt$ngrid, xlim = opt$xlim, display =
-                                           "none")$estimate
-        ind <- ind[-indi]
-      }
-      if (nlev == 2) {
-        ts.star <- sum((est.star[1, ] - est.star[2, ])^2)
-      }
-      else {
-        sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
-                                   ngrid = opt$ngrid, display = "none")$estimate
-        ts.star <- 0
-        for (i in 1:nlev) {
-          ts.star <- ts.star + ni[i] * sum((est.star[i, 
-                                                     ] - sm.mean)^2)
-        }
-      }
-      if (ts.star > ts) 
-        p <- p + 1
-      if (opt$verbose > 1) {
-        cat(iboot)
-        cat(" ")
-      }
-    }
-    p <- p/nboot
-    cat("\nTest of equal densities:  p-value = ", round(p, 
-                                                        5), "\n")
-    est <- list(p = p, h = h)
-  }
-  if (model == "equal" & band) {
-    av <- (sqrt(estimate[1, ]) + sqrt(estimate[2, ]))/2
-    se <- sqrt(se[1, ]^2 + se[2, ]^2)
-    upper <- (av + se)^2
-    lower <- pmax(av - se, 0)^2
-    plot(xlim, c(0, 1.1 * max(as.vector(estimate), upper)), 
-         xlab = xlab, ylab = ylab, type = "n", asp=asp, ...)     
-    ## ... and asp added; was opt$xlab and opt$ylab
-    polygon(c(eval.points, rev(eval.points)), c(upper, rev(lower)), 
-            col = bandcol, border = 0)                                      
-    ## was col = "cyan"
-    if (is.null(usePolyg)) {
-      lines(eval.points, estimate[1, ], lty = opt$lty[1], col =
-              opt$col[1], lwd = lwd[1])
-      lines(eval.points, estimate[2, ], lty = opt$lty[2], col =
-              opt$col[2], lwd = lwd[2])
-    }
-    else {
-      polygon(eval.points, estimate[1, ], lty = opt$lty[1], col =
-                opt$col[1], lwd = lwd[1])
-      polygon(eval.points, estimate[2, ], lty = opt$lty[2], col =
-                opt$col[2], lwd = lwd[2])
-    }
-    est <- list(p = p, upper = upper, lower = lower, h = h)
-  }
-  invisible(est)
-}
+# sm.density.compare2 <- function (x, group, h, model = "none", bandcol =
+#                                    'cyan', lwd = par("lwd"), usePolyg = NULL, asp=NA, 
+#                                  xlab=opt$xlab, ylab=opt$ylab, ...) 
+# {
+#   if (!is.vector(x)) 
+#     stop("sm.density.compare can handle only 1-d data")
+#   opt <- sm:::sm.options(list(...))
+#   sm:::replace.na(opt, ngrid, 50)                 
+#   ## These all changed from replace.na() --> sm:::
+#   sm:::replace.na(opt, display, "line")
+#   sm:::replace.na(opt, xlab, deparse(substitute(x)))
+#   sm:::replace.na(opt, ylab, "Density")
+#   sm:::replace.na(opt, xlim, c(min(x) - diff(range(x))/4, max(x) + 
+#                                  diff(range(x))/4))
+#   sm:::replace.na(opt, eval.points, seq(opt$xlim[1], opt$xlim[2], 
+#                                         length = opt$ngrid))
+#   if (is.na(opt$band)) {
+#     if (model == "none") 
+#       opt$band <- FALSE
+#     else opt$band <- TRUE
+#   }
+#   if ((model == "none") && opt$band) 
+#     opt$band <- FALSE
+#   band <- opt$band
+#   ngrid <- opt$ngrid
+#   xlim <- opt$xlim
+#   nboot <- opt$nboot
+#   y <- x
+#   if (is.na(opt$test)) {
+#     if (model == "none") 
+#       opt$test <- FALSE
+#     else opt$test <- TRUE
+#   }
+#   if ((model == "none") && opt$test) 
+#     opt$test <- FALSE
+#   test <- opt$test
+#   if (opt$display %in% "none") 
+#     band <- FALSE
+#   fact <- factor(group)
+#   fact.levels <- levels(fact)
+#   nlev <- length(fact.levels)
+#   ni <- table(fact)
+#   if (band & (nlev > 2)) {
+#     cat("Reference band available to compare two groups only.", 
+#         "\n")
+#     band <- FALSE
+#   }
+#   if (length(opt$lty) < nlev) 
+#     opt$lty <- 1:nlev
+#   if (length(opt$col) < nlev) 
+#     opt$col <- 2:(nlev + 1)
+#   if (missing(h)) 
+#     h <- sm:::h.select(x, y = NA, group = group, ...)
+#   opt$band <- band
+#   opt$test <- test
+#   estimate <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+#   se <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+#   for (i in 1:nlev) {
+#     sm <- sm:::sm.density(y[fact == fact.levels[i]], h = h, display = "none", 
+#                           eval.points = opt$eval.points)
+#     estimate[i, ] <- sm$estimate
+#     se[i, ] <- sm$se
+#   }
+#   eval.points <- sm$eval.points
+#   if (!(opt$display %in% "none" | band)) {
+#     plot(xlim, c(0, 1.1 * max(as.vector(estimate))), xlab = opt$xlab, 
+#          ylab = opt$ylab, type = "n")
+#     #for (i in 1:nlev) lines(eval.points, estimate[i, ], lty = opt$lty[i], 
+#     #    col = opt$col[i])
+#     for (i in 1:nlev) lines(eval.points, estimate[i, ], lty =
+#                               opt$lty[i],   ## lwd hacked in
+#                             col = opt$col[i], lwd = lwd[i])
+#   }
+#   est <- NULL
+#   p <- NULL
+#   if (model == "equal" & test) {
+#     if (nlev == 2) {
+#       ts <- sum((estimate[1, ] - estimate[2, ])^2)
+#     }
+#     else {
+#       sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
+#                                  ngrid = opt$ngrid, display = "none")$estimate
+#       ts <- 0
+#       for (i in 1:nlev) ts <- ts + ni[i] * sum((estimate[i, 
+#                                                          ] - sm.mean)^2)
+#     }
+#     p <- 0
+#     est.star <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+#     for (iboot in 1:nboot) {
+#       ind <- (1:length(y))
+#       for (i in 1:nlev) {
+#         indi <- sample((1:length(ind)), ni[i])
+#         est.star[i, ] <- sm:::sm.density(y[ind[indi]], h = h, 
+#                                          ngrid = opt$ngrid, xlim = opt$xlim, display =
+#                                            "none")$estimate
+#         ind <- ind[-indi]
+#       }
+#       if (nlev == 2) {
+#         ts.star <- sum((est.star[1, ] - est.star[2, ])^2)
+#       }
+#       else {
+#         sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
+#                                    ngrid = opt$ngrid, display = "none")$estimate
+#         ts.star <- 0
+#         for (i in 1:nlev) {
+#           ts.star <- ts.star + ni[i] * sum((est.star[i, 
+#                                                      ] - sm.mean)^2)
+#         }
+#       }
+#       if (ts.star > ts) 
+#         p <- p + 1
+#       if (opt$verbose > 1) {
+#         cat(iboot)
+#         cat(" ")
+#       }
+#     }
+#     p <- p/nboot
+#     cat("\nTest of equal densities:  p-value = ", round(p, 
+#                                                         5), "\n")
+#     est <- list(p = p, h = h)
+#   }
+#   if (model == "equal" & band) {
+#     av <- (sqrt(estimate[1, ]) + sqrt(estimate[2, ]))/2
+#     se <- sqrt(se[1, ]^2 + se[2, ]^2)
+#     upper <- (av + se)^2
+#     lower <- pmax(av - se, 0)^2
+#     plot(xlim, c(0, 1.1 * max(as.vector(estimate), upper)), 
+#          xlab = xlab, ylab = ylab, type = "n", asp=asp, ...)     
+#     ## ... and asp added; was opt$xlab and opt$ylab
+#     polygon(c(eval.points, rev(eval.points)), c(upper, rev(lower)), 
+#             col = bandcol, border = 0)                                      
+#     ## was col = "cyan"
+#     if (is.null(usePolyg)) {
+#       lines(eval.points, estimate[1, ], lty = opt$lty[1], col =
+#               opt$col[1], lwd = lwd[1])
+#       lines(eval.points, estimate[2, ], lty = opt$lty[2], col =
+#               opt$col[2], lwd = lwd[2])
+#     }
+#     else {
+#       polygon(eval.points, estimate[1, ], lty = opt$lty[1], col =
+#                 opt$col[1], lwd = lwd[1])
+#       polygon(eval.points, estimate[2, ], lty = opt$lty[2], col =
+#                 opt$col[2], lwd = lwd[2])
+#     }
+#     est <- list(p = p, upper = upper, lower = lower, h = h)
+#   }
+#   invisible(est)
+# }
 
 # Prepare data with variables of interest
 

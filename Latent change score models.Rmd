@@ -2,112 +2,333 @@
 title: "Latent change score models"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, verbose = FALSE, warning = FALSE, message = FALSE}
+source("T1_plus_T3-datasetup.R")
 ```
 
-
-
-```{r cars}
-#This script simulates, then fits, data for a univariate Latent Change Score model.
-#This script is part of the manuscript 
+```{r univariate-model}
+#This script is adapted from the manuscript 
 #'Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications'
 #Rogier A. Kievit, Andreas M. Brandmaier, Gabriel Ziegler, Anne-Laura van Harmelen, 
 #Susanne de Mooij, Michael Moutoussisa, Ian Goodyer, Ed Bullmore, Peter Jones, 
 #Peter Fonagy, NSPN Consortium, Ulman Lindenberger & Raymond J. Dolan                                                         
 
-
-#This code was written by Rogier A. Kievit (rogier.kievit@mrc-cbu.cam.ac.uk), 30 January 2017.
+#The original code was written by Rogier A. Kievit (rogier.kievit@mrc-cbu.cam.ac.uk), 30 January 2017.
 #It may be used, (re)shared and modified freely under a CC-BY license 
-
-# DISCLAIMER: SEM model choices and conventions vary - final responsibility for 
-# model fitting and interpretation lies with the researcher 
-
-# Uncomment the following lines to download and install the relevant packages
-
-# install.packages('lavaan') 
-# install.packages('ggplot2')
-# install.packages('reshape2')
-
-library(lavaan)
-library(ggplot2)
-library(reshape2)
 
 #This script simulates, then saves, then fits, data for a univariate Latent Change Score model.
 
-#####  Simulate data for a Univariate Latent Change Score model ####
+# Select data
 
-#Fix sample size
-samplesize<-500
+data <- df %>% dplyr::select(
+  id,
+  autonomous_T1 = PA_autonomous_T1,
+  autonomous_T2 = PA_autonomous_T3 # In the study, there was a mid-intervention T2, but for intervention group only
+  )
 
-#Simulation specification
-ULCS_simulate<-'
+# Fit the Univariate Latent Change Score model
+ULCS <- '
+autonomous_T2 ~  1*autonomous_T1     # Fixed regression of T2 on T1
+d_autonomous1 =~ 1*autonomous_T2     # Fixed regression of d_autonomous1 on autonomous_T2
+autonomous_T2 ~  0*1                 # This line constrains the intercept of autonomous_T2 to 0
+autonomous_T2 ~~ 0*autonomous_T2     # This fixes the variance of the autonomous_T2 to 0 
 
-#####     The following lines specify the core assumptions of the LCS 
-#####     and should not generally be modified
+d_autonomous1 ~  1                   # This estimates the intercept of the change scores 
+autonomous_T1 ~  1                   # This estimates the intercept of autonomous_T1 
+d_autonomous1 ~~ d_autonomous1       # This estimates the variance of the change scores 
+autonomous_T1 ~~ autonomous_T1       # This estimates the variance of autonomous_T1 
+d_autonomous1 ~ autonomous_T1        # This estimates the self-feedback parameter
+'
 
-COG_T2 ~ 1*COG_T1     # Fixed regression of COG_T2 on COG_T1
-dCOG1 =~ 1*COG_T2     # Fixed regression of dCOG1 on COG_T2
-COG_T2 ~ 0*1          # This line constrains the intercept of COG_T2 to 0
+fitULCS <- lavaan::lavaan(ULCS, data = data, estimator='mlr', fixed.x=FALSE, missing='fiml')
+lavaan::summary(fitULCS, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+lavaan::coef(fitULCS) 
+
+# Plot raw scores 
+df %>% dplyr::select(
+  id,
+  intervention,
+  T1 = PA_autonomous_T1,
+  T2 = PA_autonomous_T3 # In the study, there was a mid-intervention T2, but for intervention group only
+  ) %>% 
+  mutate(intervention = factor(intervention, labels = c("Control group", "Intervention group"))) %>% 
+  gather(variable, value, -id, -intervention) %>% 
+  na.omit(.) %>% 
+ggplot(aes(variable, value, group=id)) +
+  geom_point(col = 'dodgerblue', size = 3, alpha = .2) +
+  geom_line(col = 'dodgerblue', alpha = .2) +
+  ggtitle('Univariate Latent Change Score model') + 
+  ylab('Autonomous motivation scores') +
+  xlab('Time points') + 
+  facet_wrap("intervention")
+
+# Plot the SEM model
+semPlot::semPaths(fitULCS, "std", edge.label.cex = 1, curvePivot = TRUE, layout = "tree",
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+# Fit model with variance of change constrained at zero, leads to a non positive definite covariance matrix. 
+
+# ULCS_d0 <- '
+# autonomous_T2 ~  1*autonomous_T1     # Fixed regression of T2 on T1
+# d_autonomous1 =~ 1*autonomous_T2     # Fixed regression of d_autonomous1 on autonomous_T2
+# autonomous_T2 ~  0*1                 # This line constrains the intercept of autonomous_T2 to 0
+# autonomous_T2 ~~ 0*autonomous_T2     # This fixes the variance of the autonomous_T2 to 0 
+# 
+# d_autonomous1 ~  1                   # This estimates the intercept of the change scores 
+# autonomous_T1 ~  1                   # This estimates the intercept of autonomous_T1 
+# d_autonomous1 ~~ 0*d_autonomous1      # NOW ZERO - This estimates the variance of the change scores 
+# autonomous_T1 ~~ autonomous_T1       # This estimates the variance of autonomous_T1 
+# d_autonomous1 ~ autonomous_T1        # This estimates the self-feedback parameter
+# '
+# 
+# fitULCS_d0 <- lavaan::lavaan(ULCS_d0, data = data, estimator='mlr', fixed.x=FALSE, missing='fiml')
+# lavaan::summary(fitULCS_d0, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+```
+
+We can observe, that high starting scores on autonomous motivation lead to smaller changes and vice versa, understandably due to ceiling effects in the data. The intercept for change is positive, so there was a general trend of increasing scores on the measure.
+
+How to interpret the path from d_1 to a_T2?
+
+# Multiple indicators for automous
+
+```{r multiple-indicators-model}
+# Select data
+
+data_MILCS <- df %>% dplyr::select(
+  id,
+  intervention,
+  PA_amotivation_02_T1,
+  PA_amotivation_01_T1,
+  PA_amotivation_03_T1,
+  PA_amotivation_04_T1,
+  PA_extrinsic_01_T1,
+  PA_extrinsic_02_T1,
+  PA_extrinsic_03_T1,
+  PA_introjected_01_T1,
+  PA_introjected_02_T1,
+  PA_identified_01_T1,
+  PA_identified_02_T1,
+  PA_identified_03_T1,
+  PA_integrated_01_T1,
+  PA_integrated_02_T1,
+  PA_integrated_03_T1,
+  PA_intrinsic_01_T1,
+  PA_intrinsic_02_T1,
+  PA_intrinsic_03_T1,
+  PA_amotivation_02_T3,
+  PA_amotivation_01_T3,
+  PA_amotivation_03_T3,
+  PA_amotivation_04_T3,
+  PA_extrinsic_01_T3,
+  PA_extrinsic_02_T3,
+  PA_extrinsic_03_T3,
+  PA_introjected_01_T3,
+  PA_introjected_02_T3,
+  PA_identified_01_T3,
+  PA_identified_02_T3,
+  PA_identified_03_T3,
+  PA_integrated_01_T3,
+  PA_integrated_02_T3,
+  PA_integrated_03_T3,
+  PA_intrinsic_01_T3,
+  PA_intrinsic_02_T3,
+  PA_intrinsic_03_T3
+  )
+
+# Remove "PA_" from variable names for nicer plotting:
+names(data_MILCS) <- gsub("PA_", "", names(data_MILCS))
+
+# Change "_T3" to "_T2" for clarity
+names(data_MILCS) <- gsub("_T3", "_T2", names(data_MILCS))
+
+MILCS <- '
+# This specifies the measurement model for autonomous_T1:
+autonomous_T1 =~ 1 * identified_01_T1 + identified_02_T1 + identified_03_T1 +
+                     integrated_01_T1 + integrated_02_T1 + integrated_03_T1 +
+                     intrinsic_01_T1 + intrinsic_02_T1 + intrinsic_03_T1  
+
+# This specifies the measurement model for autonomous_T2 with the equality constrained factor loadings:
+autonomous_T2 =~ 1 * identified_01_T2 + 
+                    equal("autonomous_T1 =~ identified_02_T1") * identified_02_T2 +
+                    equal("autonomous_T1 =~ identified_03_T1") * identified_03_T2 +
+                    equal("autonomous_T1 =~ integrated_01_T1") * integrated_01_T2 + 
+                    equal("autonomous_T1 =~ integrated_02_T1") * integrated_02_T2 +
+                    equal("autonomous_T1 =~ integrated_03_T1") * integrated_03_T2 +
+                    equal("autonomous_T1 =~ intrinsic_01_T1") * intrinsic_01_T2 + 
+                    equal("autonomous_T1 =~ intrinsic_02_T1") * intrinsic_02_T2 +
+                    equal("autonomous_T1 =~ intrinsic_03_T1") * intrinsic_03_T2
+
+autonomous_T2 ~ 1*autonomous_T1     # Fixed regression of autonomous_T2 on autonomous_T1
+d_aut1 =~ 1*autonomous_T2           # Fixed regression of d_aut1 on autonomous_T2
+autonomous_T2 ~ 0*1                 # This line constrains the intercept of autonomous_T2 to 0
+autonomous_T2 ~~ 0*autonomous_T2    # This fixes the variance of the autonomous_T2 to 0 
+
+d_aut1 ~ 1                          # This estimates the intercept of the change score 
+autonomous_T1 ~  1                  # This estimates the intercept of autonomous_T1 
+d_aut1 ~~  d_aut1                   # This estimates the variance of the change scores 
+autonomous_T1 ~~ autonomous_T1      # This estimates the variance of the autonomous_T1 
+d_aut1 ~ autonomous_T1              # This estimates the self-feedback parameter
+
+# This allows residual variances on indicators:
+identified_01_T1 ~~ identified_01_T1
+identified_02_T1 ~~ identified_02_T1
+identified_03_T1 ~~ identified_03_T1
+integrated_01_T1 ~~ integrated_01_T1
+integrated_02_T1 ~~ integrated_02_T1
+integrated_03_T1 ~~ integrated_03_T1
+intrinsic_01_T1 ~~ intrinsic_01_T1
+intrinsic_02_T1 ~~ intrinsic_02_T1
+intrinsic_03_T1 ~~ intrinsic_03_T1
+
+# This allows residual covariances across of a single indicator across T1 and T2
+identified_01_T1 ~~ identified_01_T2
+identified_02_T1 ~~ identified_02_T2
+identified_03_T1 ~~ identified_03_T2
+integrated_01_T1 ~~ integrated_01_T2
+integrated_02_T1 ~~ integrated_02_T2
+integrated_03_T1 ~~ integrated_03_T2
+intrinsic_01_T1 ~~ intrinsic_01_T2
+intrinsic_02_T1 ~~ intrinsic_02_T2
+intrinsic_03_T1 ~~ intrinsic_03_T2
+
+# This allows residual variance on indicators at T2 
+identified_01_T2 ~~ equal("identified_01_T1 ~~ identified_01_T1") * identified_01_T2
+identified_02_T2 ~~ equal("identified_02_T1 ~~ identified_02_T1") * identified_02_T2
+identified_03_T2 ~~ equal("identified_03_T1 ~~ identified_03_T1") * identified_03_T2
+integrated_01_T2 ~~ equal("integrated_01_T1 ~~ integrated_01_T1") * integrated_01_T2
+integrated_02_T2 ~~ equal("integrated_02_T1 ~~ integrated_02_T1") * integrated_02_T2
+integrated_03_T2 ~~ equal("integrated_03_T1 ~~ integrated_03_T1") * integrated_03_T2
+intrinsic_01_T2 ~~ equal("intrinsic_01_T1 ~~ intrinsic_01_T1") * intrinsic_01_T2
+intrinsic_02_T2 ~~ equal("intrinsic_02_T1 ~~ intrinsic_02_T1") * intrinsic_02_T2
+intrinsic_03_T2 ~~ equal("intrinsic_03_T1 ~~ intrinsic_03_T1") * intrinsic_03_T2
+
+# This constrains the first intercept of indicator to 0 at T1, estimates others
+identified_01_T1 ~ 0*1                 
+identified_02_T1 ~ 1
+identified_03_T1 ~ 1
+integrated_01_T1 ~ 1
+integrated_02_T1 ~ 1
+integrated_03_T1 ~ 1
+intrinsic_01_T1 ~ 1
+intrinsic_02_T1 ~ 1
+intrinsic_03_T1 ~ 1
+
+# Same with t2, except the value is predicted by the intercept of the previous time point
+identified_01_T2 ~ 0 * 1
+identified_02_T2 ~ equal("identified_02_T1 ~ 1") * 1
+identified_03_T2 ~ equal("identified_03_T1 ~ 1") * 1
+integrated_01_T2 ~ equal("integrated_01_T1 ~ 1") * 1
+integrated_02_T2 ~ equal("integrated_02_T1 ~ 1") * 1
+integrated_03_T2 ~ equal("integrated_03_T1 ~ 1") * 1
+intrinsic_01_T2 ~ equal("intrinsic_01_T1 ~ 1") * 1
+intrinsic_02_T2 ~ equal("intrinsic_02_T1 ~ 1") * 1
+intrinsic_03_T2 ~ equal("intrinsic_03_T1 ~ 1") * 1
+'
+
+fitMILCS <- lavaan::lavaan(MILCS, data = data_MILCS, estimator='mlr', fixed.x = FALSE, missing='fiml')
+lavaan::summary(fitMILCS, fit.measures=TRUE, standardized=TRUE, rsquare=TRUE)
+
+lavaan::coef(fitMILCS) 
+
+# Plot raw scores 
+drawit <- function(regulation, intervention_allocation = "Control group") {
+pd <- position_dodge(0.4) # see: https://stackoverflow.com/questions/39533456/r-how-to-jitter-both-geom-line-and-geom-point-in-ggplot2-linegraph
+
+# Show change scores; see https://stackoverflow.com/questions/50181772/line-color-and-width-by-slope-in-ggplot2
+
+data_MILCS %>% 
+  dplyr::mutate(intervention = factor(intervention, labels = c("Control group", "Intervention group"))) %>% 
+  tidyr::gather(variable, value, -id, -intervention) %>% 
+  tidyr::separate(variable, c("item", "time"), sep = "_T") %>% 
+  dplyr::mutate(value = jitter(value, amount = 0.1)) %>% # Y-axis jitter to make points more readable
+  group_by(id,item) %>% 
+  mutate(slope = (value[time==2] - value[time==1])/(2-1)) %>% 
+  dplyr::filter(stringr::str_detect(item, regulation)) %>%
+  dplyr::filter(intervention == intervention_allocation) %>%
+  na.omit(.) %>% 
+ggplot(aes(x = time, y = value, group = id)) +
+  geom_point(size = 1, alpha = .2, position = pd) +
+  geom_line(aes(color = slope), alpha = .2, position = pd) +
+  scale_color_viridis_c(option = "inferno") +
+  ggtitle(paste0('Multiple indicator LCS model:', intervention_allocation)) + 
+  ylab('Autonomous motivation scores') +
+  xlab('Time points') + 
+  facet_wrap("item") +
+  theme(legend.position="bottom") # change to "none" to get rid of it
+}
+
+# drawit(regulation = "integrated")
+
+for (i in c("integrated", "identified", "intrinsic")) {
+for (j in c("Control group", "Intervention group")) {
+print(drawit(regulation = i, intervention_allocation = j))
+}}
+
+# Plot the SEM model
+semPlot::semPaths(fitMILCS, "std", label.cex = .6, label.scale = FALSE, edge.label.cex = 1, layout = "tree",
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+
+```
+
+
+```{r bivariate-model, eval = FALSE}
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS<-'
+
+COG_T2 ~ 1*COG_T1     # This parameter regresses COG_T2 perfectly on COG_T1
+dCOG1 =~ 1*COG_T2     # This defines the latent change score factor as measured perfectly by scores on COG_T2
+dCOG1 ~ 1             # This estimates the intercept of the change score 
+COG_T1 ~  1           # This estimates the intercept of COG_T1 
+COG_T2 ~ 0*1          # This constrains the intercept of COG_T2 to 0
+
+NEU_T2 ~ 1*NEU_T1     # This parameter regresses NEU_T2 perfectly on NEU_T1
+dNEU1 =~ 1*NEU_T2     # This defines the latent change score factor as measured perfectly by scores on NEU_T2
+NEU_T2 ~ 0*1          # This line constrains the intercept of NEU_T2 to 0
+NEU_T2 ~~ 0*NEU_T2    # This fixes the variance of the NEU_T1 to 0  
+
+dCOG1 ~~  dCOG1       # This estimates the variance of the change scores
+COG_T1 ~~   COG_T1    # This estimates the variance of the COG_T1 
 COG_T2 ~~ 0*COG_T2    # This fixes the variance of the COG_T2 to 0  
 
+dNEU1 ~ 1             # This estimates the intercept of the change score 
+NEU_T1 ~ 1            # This estimates the intercept of NEU_T1 
+dNEU1 ~~ dNEU1        # This estimates the variance of the change scores 
+NEU_T1 ~~ NEU_T1      # This estimates the variance of NEU_T1 
 
-###### The following five parameters will be estimated in the model. 
-###### Values can be modified manually to examine the effect on the model
+dNEU1~COG_T1+NEU_T1   # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
+dCOG1~NEU_T1+COG_T1   # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
 
-dCOG1 ~ 10*1        # This fixes the intercept of the change score to 10 
-COG_T1 ~ 50*1       # This fixes the intercept of COG_T1 to 50 
-
-dCOG1 ~~ 5*dCOG1    # This fixes the variance of the change scores to 5. 
-COG_T1 ~~ 8*COG_T1  # This fixes the variance of the COG_T1 to 8. 
-
-dCOG1~-0.1*COG_T1   # This fixes the self-feedback parameter to -0.1. 
-
+COG_T1 ~~  NEU_T1     # This estimates the COG_T1 NEU_T1 covariance
+dCOG1~~dNEU1          # This estimates the dCOG and dNEU covariance
 '
 
-#Simulate data
-set.seed(1234)
-simdatULCS<-simulateData(ULCS_simulate,sample.nobs = samplesize,meanstructure = T) #Simulate data
-colMeans(simdatULCS) #sanity check the means
+fitBLCS <- lavaan(BLCS, data=simdatBLCS, estimator='mlr',fixed.x=FALSE,missing='fiml')
+summary(fitBLCS, fit.measures=TRUE, standardized=TRUE, rsquare=TRUE)
 
-write.csv(simdatULCS,'1_simdatULCS.csv') #save data to be used by other programs
+#Visualize the raw data
 
-#Fit the Univariate Latent Change Score model to simulated data
-ULCS<-'
-
-COG_T2 ~ 1*COG_T1     # Fixed regression of COG_T2 on COG_T1
-dCOG1 =~ 1*COG_T2     # Fixed regression of dCOG1 on COG_T2
-COG_T2 ~ 0*1          # This line constrains the intercept of COG_T2 to 0
-COG_T2 ~~ 0*COG_T2    # This fixes the variance of the COG_T2 to 0 
-
-dCOG1 ~ 1             # This estimates the intercept of the change scores 
-COG_T1 ~  1           # This estimates the intercept of COG_T1 
-dCOG1 ~~  dCOG1       # This estimates the variance of the change scores 
-COG_T1 ~~   COG_T1    # This estimates the variance of COG_T1 
-dCOG1~COG_T1          # This estimates the self-feedback parameter
-
-'
-
-fitULCS <- lavaan(ULCS, data=simdatULCS, estimator='mlr',fixed.x=FALSE,missing='fiml')
-summary(fitULCS, fit.measures=TRUE, standardized=TRUE, rsquare=TRUE)
-
-
-#Visualize the raw data if so inclined
 theme_set(theme_grey(base_size = 18)) #increase text size
-id=factor(1:samplesize) #create ids
-plotdattemp=data.frame(simdatULCS$COG_T1,simdatULCS$COG_T2,id) #create dataframe with raw scores
-colnames(plotdattemp)<-c('COG_T1', 'COG_T2','id') #specify names
-plotdat<-melt(plotdattemp,by='id') #melt to long form
-ggplot(plotdat,aes(variable,value,group=id))+geom_point(col='dodgerblue',size=3,alpha=.7)+geom_line(col='dodgerblue',alpha=.7)+ggtitle('Univariate Latent Change Score model')+ylab('COG scores')+xlab('Time points')
+id=factor(1:samplesize)
+plotdattemp=data.frame(c(simdatBLCS$COG_T1,simdatBLCS$NEU_T1),c(simdatBLCS$COG_T2,simdatBLCS$NEU_T2),as.factor(c(id,id)),c(rep('COG',times=samplesize),rep('NEU',times=samplesize)))
+colnames(plotdattemp)<-c('T1', 'T2','id','Domain')
+plotdat<-melt(plotdattemp,by='id')
+ggplot(plotdat,aes(variable,value,group=id,col=Domain))+geom_point(size=3,alpha=.7)+geom_line(alpha=.7)+ggtitle('Bivariate Latent Change Score model')+ylab('Scores')+xlab('Time points')+facet_grid(~Domain)
+
+  # identified =~ PA_identified_01_T1 + PA_identified_02_T1 + PA_identified_03_T1
+  # integrated =~ PA_integrated_01_T1 + PA_integrated_02_T1 + PA_integrated_03_T1
+  # intrinsic =~ PA_intrinsic_01_T1 + PA_intrinsic_02_T1 + PA_intrinsic_03_T1
+  # introjected =~ PA_introjected_01_T1 + PA_introjected_02_T1
+  # extrinsic =~ PA_extrinsic_01_T1 + PA_extrinsic_02_T1 + PA_extrinsic_03_T1 
+  # amotivation =~ PA_amotivation_01_T1 + PA_amotivation_02_T1 + PA_amotivation_03_T1 + PA_amotivation_04_T1
+
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

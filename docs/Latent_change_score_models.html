@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Latent change score models</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Visualising baseline characteristics</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">About</a>
+</li>
+<li>
+  <a href="baseline-manuscript.html">Manuscript</a>
+</li>
+<li>
+  <a href="baseline-supplement.html">Descriptives</a>
+</li>
+<li>
+  <a href="baseline-networks.html">Networks</a>
+</li>
+<li>
+  <a href="https://raw.githubusercontent.com/heinonmatti/baseline-visu/master/baseline-datasetup.R">Data setup code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Latent change score models</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;T1_plus_T3-datasetup.R&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#This script is adapted from the manuscript </span>
+<span class="co">#&#39;Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications&#39;</span>
+<span class="co">#Rogier A. Kievit, Andreas M. Brandmaier, Gabriel Ziegler, Anne-Laura van Harmelen, </span>
+<span class="co">#Susanne de Mooij, Michael Moutoussisa, Ian Goodyer, Ed Bullmore, Peter Jones, </span>
+<span class="co">#Peter Fonagy, NSPN Consortium, Ulman Lindenberger &amp; Raymond J. Dolan                                                         </span>
+
+<span class="co">#The original code was written by Rogier A. Kievit (rogier.kievit@mrc-cbu.cam.ac.uk), 30 January 2017.</span>
+<span class="co">#It may be used, (re)shared and modified freely under a CC-BY license </span>
+
+<span class="co">#This script simulates, then saves, then fits, data for a univariate Latent Change Score model.</span>
+
+<span class="co"># Select data</span>
+
+data &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
+  id,
+  <span class="dt">autonomous_T1 =</span> PA_autonomous_T1,
+  <span class="dt">autonomous_T2 =</span> PA_autonomous_T3 <span class="co"># In the study, there was a mid-intervention T2, but for intervention group only</span>
+  )
+
+<span class="co"># Fit the Univariate Latent Change Score model</span>
+ULCS &lt;-<span class="st"> &#39;</span>
+<span class="st">autonomous_T2 ~  1*autonomous_T1     # Fixed regression of T2 on T1</span>
+<span class="st">d_autonomous1 =~ 1*autonomous_T2     # Fixed regression of d_autonomous1 on autonomous_T2</span>
+<span class="st">autonomous_T2 ~  0*1                 # This line constrains the intercept of autonomous_T2 to 0</span>
+<span class="st">autonomous_T2 ~~ 0*autonomous_T2     # This fixes the variance of the autonomous_T2 to 0 </span>
+
+<span class="st">d_autonomous1 ~  1                   # This estimates the intercept of the change scores </span>
+<span class="st">autonomous_T1 ~  1                   # This estimates the intercept of autonomous_T1 </span>
+<span class="st">d_autonomous1 ~~ d_autonomous1       # This estimates the variance of the change scores </span>
+<span class="st">autonomous_T1 ~~ autonomous_T1       # This estimates the variance of autonomous_T1 </span>
+<span class="st">d_autonomous1 ~ autonomous_T1        # This estimates the self-feedback parameter</span>
+<span class="st">&#39;</span>
+
+fitULCS &lt;-<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">lavaan</span>(ULCS, <span class="dt">data =</span> data, <span class="dt">estimator=</span><span class="st">&#39;mlr&#39;</span>, <span class="dt">fixed.x=</span><span class="ot">FALSE</span>, <span class="dt">missing=</span><span class="st">&#39;fiml&#39;</span>)
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: some cases are empty and will be ignored:
+##   4 29 37 76 134 245 351 352 385 493 494 495 623 722 772 774 782 787 791 792 921 967 1112
+lavaan<span class="op">::</span><span class="kw">summary</span>(fitULCS, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
+## lavaan (0.5-23.1097) converged normally after  20 iterations
+## 
+##                                                   Used       Total
+##   Number of observations                          1142        1165
+## 
+##   Number of missing patterns                         3
+## 
+##   Estimator                                         ML      Robust
+##   Minimum Function Test Statistic                0.000       0.000
+##   Degrees of freedom                                 0           0
+##   Scaling correction factor                                     NA
+##     for the Yuan-Bentler correction
+## 
+## Model test baseline model:
+## 
+##   Minimum Function Test Statistic              698.523     294.613
+##   Degrees of freedom                                 1           1
+##   P-value                                        0.000       0.000
+## 
+## User model versus baseline model:
+## 
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.000       1.000
+## 
+##   Robust Comparative Fit Index (CFI)                         1.000
+##   Robust Tucker-Lewis Index (TLI)                            1.000
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)              -2602.254   -2602.254
+##   Loglikelihood unrestricted model (H1)      -2602.254   -2602.254
+## 
+##   Number of free parameters                          5           5
+##   Akaike (AIC)                                5214.508    5214.508
+##   Bayesian (BIC)                              5239.711    5239.711
+##   Sample-size adjusted Bayesian (BIC)         5223.829    5223.829
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.000       0.000
+##   90 Percent Confidence Interval          0.000  0.000       0.000  0.000
+##   P-value RMSEA &lt;= 0.05                             NA          NA
+## 
+##   Robust RMSEA                                               0.000
+##   90 Percent Confidence Interval                             0.000  0.000
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.000       0.000
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Observed
+##   Standard Errors                   Robust.huber.white
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   d_autonomous1 =~                                                      
+##     autonomous_T2     1.000                               0.751    0.716
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   autonomous_T2 ~                                                       
+##     autonomous_T1     1.000                               1.000    1.006
+##   d_autonomous1 ~                                                       
+##     autonomous_T1    -0.260    0.024  -10.819    0.000   -0.346   -0.364
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .autonomous_T2     0.000                               0.000    0.000
+##    .d_autonomous1     0.919    0.087   10.619    0.000    1.224    1.224
+##     autonomous_T1     3.402    0.032  107.453    0.000    3.402    3.225
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .autonomous_T2     0.000                               0.000    0.000
+##    .d_autonomous1     0.489    0.033   14.768    0.000    0.867    0.867
+##     autonomous_T1     1.112    0.039   28.594    0.000    1.112    1.000
+## 
+## R-Square:
+##                    Estimate
+##     autonomous_T2     1.000
+##     d_autonomous1     0.133
+
+lavaan<span class="op">::</span><span class="kw">coef</span>(fitULCS) 
+##              d_autonomous1~1              autonomous_T1~1 
+##                        0.919                        3.402 
+## d_autonomous1~~d_autonomous1 autonomous_T1~~autonomous_T1 
+##                        0.489                        1.112 
+##  d_autonomous1~autonomous_T1 
+##                       -0.260
+
+<span class="co"># Plot raw scores </span>
+df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
+  id,
+  intervention,
+  <span class="dt">T1 =</span> PA_autonomous_T1,
+  <span class="dt">T2 =</span> PA_autonomous_T3 <span class="co"># In the study, there was a mid-intervention T2, but for intervention group only</span>
+  ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">intervention =</span> <span class="kw">factor</span>(intervention, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Control group&quot;</span>, <span class="st">&quot;Intervention group&quot;</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>id, <span class="op">-</span>intervention) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">na.omit</span>(.) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="kw">ggplot</span>(<span class="kw">aes</span>(variable, value, <span class="dt">group=</span>id)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">col =</span> <span class="st">&#39;dodgerblue&#39;</span>, <span class="dt">size =</span> <span class="dv">3</span>, <span class="dt">alpha =</span> .<span class="dv">2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">col =</span> <span class="st">&#39;dodgerblue&#39;</span>, <span class="dt">alpha =</span> .<span class="dv">2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&#39;Univariate Latent Change Score model&#39;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&#39;Autonomous motivation scores&#39;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&#39;Time points&#39;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="st">&quot;intervention&quot;</span>)</code></pre></div>
+<p><img src="Latent_change_score_models_files/figure-html/univariate-model-1.png" width="2100" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># Plot the SEM model</span>
+semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitULCS, <span class="st">&quot;std&quot;</span>, <span class="dt">edge.label.cex =</span> <span class="dv">1</span>, <span class="dt">curvePivot =</span> <span class="ot">TRUE</span>, <span class="dt">layout =</span> <span class="st">&quot;tree&quot;</span>,
+                  <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
+                               <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
+                               <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
+<p><img src="Latent_change_score_models_files/figure-html/univariate-model-2.png" width="2100" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># Fit model with variance of change constrained at zero, leads to a non positive definite covariance matrix. </span>
+
+<span class="co"># ULCS_d0 &lt;- &#39;</span>
+<span class="co"># autonomous_T2 ~  1*autonomous_T1     # Fixed regression of T2 on T1</span>
+<span class="co"># d_autonomous1 =~ 1*autonomous_T2     # Fixed regression of d_autonomous1 on autonomous_T2</span>
+<span class="co"># autonomous_T2 ~  0*1                 # This line constrains the intercept of autonomous_T2 to 0</span>
+<span class="co"># autonomous_T2 ~~ 0*autonomous_T2     # This fixes the variance of the autonomous_T2 to 0 </span>
+<span class="co"># </span>
+<span class="co"># d_autonomous1 ~  1                   # This estimates the intercept of the change scores </span>
+<span class="co"># autonomous_T1 ~  1                   # This estimates the intercept of autonomous_T1 </span>
+<span class="co"># d_autonomous1 ~~ 0*d_autonomous1      # NOW ZERO - This estimates the variance of the change scores </span>
+<span class="co"># autonomous_T1 ~~ autonomous_T1       # This estimates the variance of autonomous_T1 </span>
+<span class="co"># d_autonomous1 ~ autonomous_T1        # This estimates the self-feedback parameter</span>
+<span class="co"># &#39;</span>
+<span class="co"># </span>
+<span class="co"># fitULCS_d0 &lt;- lavaan::lavaan(ULCS_d0, data = data, estimator=&#39;mlr&#39;, fixed.x=FALSE, missing=&#39;fiml&#39;)</span>
+<span class="co"># lavaan::summary(fitULCS_d0, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)</span></code></pre></div>
+<p>We can observe, that high starting scores on autonomous motivation lead to smaller changes and vice versa, understandably due to ceiling effects in the data. The intercept for change is positive, so there was a general trend of increasing scores on the measure.</p>
+<p>How to interpret the path from d_1 to a_T2?</p>
+<div id="multiple-indicators-for-automous" class="section level1">
+<h1>Multiple indicators for automous</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Select data</span>
+
+data_MILCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
+  id,
+  intervention,
+  PA_amotivation_02_T1,
+  PA_amotivation_01_T1,
+  PA_amotivation_03_T1,
+  PA_amotivation_04_T1,
+  PA_extrinsic_01_T1,
+  PA_extrinsic_02_T1,
+  PA_extrinsic_03_T1,
+  PA_introjected_01_T1,
+  PA_introjected_02_T1,
+  PA_identified_01_T1,
+  PA_identified_02_T1,
+  PA_identified_03_T1,
+  PA_integrated_01_T1,
+  PA_integrated_02_T1,
+  PA_integrated_03_T1,
+  PA_intrinsic_01_T1,
+  PA_intrinsic_02_T1,
+  PA_intrinsic_03_T1,
+  PA_amotivation_02_T3,
+  PA_amotivation_01_T3,
+  PA_amotivation_03_T3,
+  PA_amotivation_04_T3,
+  PA_extrinsic_01_T3,
+  PA_extrinsic_02_T3,
+  PA_extrinsic_03_T3,
+  PA_introjected_01_T3,
+  PA_introjected_02_T3,
+  PA_identified_01_T3,
+  PA_identified_02_T3,
+  PA_identified_03_T3,
+  PA_integrated_01_T3,
+  PA_integrated_02_T3,
+  PA_integrated_03_T3,
+  PA_intrinsic_01_T3,
+  PA_intrinsic_02_T3,
+  PA_intrinsic_03_T3
+  )
+
+<span class="co"># Remove &quot;PA_&quot; from variable names for nicer plotting:</span>
+<span class="kw">names</span>(data_MILCS) &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;PA_&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="kw">names</span>(data_MILCS))
+
+<span class="co"># Change &quot;_T3&quot; to &quot;_T2&quot; for clarity</span>
+<span class="kw">names</span>(data_MILCS) &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;_T3&quot;</span>, <span class="st">&quot;_T2&quot;</span>, <span class="kw">names</span>(data_MILCS))
+
+MILCS &lt;-<span class="st"> &#39;</span>
+<span class="st"># This specifies the measurement model for autonomous_T1:</span>
+<span class="st">autonomous_T1 =~ 1 * identified_01_T1 + identified_02_T1 + identified_03_T1 +</span>
+<span class="st">                     integrated_01_T1 + integrated_02_T1 + integrated_03_T1 +</span>
+<span class="st">                     intrinsic_01_T1 + intrinsic_02_T1 + intrinsic_03_T1  </span>
+
+<span class="st"># This specifies the measurement model for autonomous_T2 with the equality constrained factor loadings:</span>
+<span class="st">autonomous_T2 =~ 1 * identified_01_T2 + </span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ identified_02_T1&quot;) * identified_02_T2 +</span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ identified_03_T1&quot;) * identified_03_T2 +</span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ integrated_01_T1&quot;) * integrated_01_T2 + </span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ integrated_02_T1&quot;) * integrated_02_T2 +</span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ integrated_03_T1&quot;) * integrated_03_T2 +</span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ intrinsic_01_T1&quot;) * intrinsic_01_T2 + </span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ intrinsic_02_T1&quot;) * intrinsic_02_T2 +</span>
+<span class="st">                    equal(&quot;autonomous_T1 =~ intrinsic_03_T1&quot;) * intrinsic_03_T2</span>
+
+<span class="st">autonomous_T2 ~ 1*autonomous_T1     # Fixed regression of autonomous_T2 on autonomous_T1</span>
+<span class="st">d_aut1 =~ 1*autonomous_T2           # Fixed regression of d_aut1 on autonomous_T2</span>
+<span class="st">autonomous_T2 ~ 0*1                 # This line constrains the intercept of autonomous_T2 to 0</span>
+<span class="st">autonomous_T2 ~~ 0*autonomous_T2    # This fixes the variance of the autonomous_T2 to 0 </span>
+
+<span class="st">d_aut1 ~ 1                          # This estimates the intercept of the change score </span>
+<span class="st">autonomous_T1 ~  1                  # This estimates the intercept of autonomous_T1 </span>
+<span class="st">d_aut1 ~~  d_aut1                   # This estimates the variance of the change scores </span>
+<span class="st">autonomous_T1 ~~ autonomous_T1      # This estimates the variance of the autonomous_T1 </span>
+<span class="st">d_aut1 ~ autonomous_T1              # This estimates the self-feedback parameter</span>
+
+<span class="st"># This allows residual variances on indicators:</span>
+<span class="st">identified_01_T1 ~~ identified_01_T1</span>
+<span class="st">identified_02_T1 ~~ identified_02_T1</span>
+<span class="st">identified_03_T1 ~~ identified_03_T1</span>
+<span class="st">integrated_01_T1 ~~ integrated_01_T1</span>
+<span class="st">integrated_02_T1 ~~ integrated_02_T1</span>
+<span class="st">integrated_03_T1 ~~ integrated_03_T1</span>
+<span class="st">intrinsic_01_T1 ~~ intrinsic_01_T1</span>
+<span class="st">intrinsic_02_T1 ~~ intrinsic_02_T1</span>
+<span class="st">intrinsic_03_T1 ~~ intrinsic_03_T1</span>
+
+<span class="st"># This allows residual covariances across of a single indicator across T1 and T2</span>
+<span class="st">identified_01_T1 ~~ identified_01_T2</span>
+<span class="st">identified_02_T1 ~~ identified_02_T2</span>
+<span class="st">identified_03_T1 ~~ identified_03_T2</span>
+<span class="st">integrated_01_T1 ~~ integrated_01_T2</span>
+<span class="st">integrated_02_T1 ~~ integrated_02_T2</span>
+<span class="st">integrated_03_T1 ~~ integrated_03_T2</span>
+<span class="st">intrinsic_01_T1 ~~ intrinsic_01_T2</span>
+<span class="st">intrinsic_02_T1 ~~ intrinsic_02_T2</span>
+<span class="st">intrinsic_03_T1 ~~ intrinsic_03_T2</span>
+
+<span class="st"># This allows residual variance on indicators at T2 </span>
+<span class="st">identified_01_T2 ~~ equal(&quot;identified_01_T1 ~~ identified_01_T1&quot;) * identified_01_T2</span>
+<span class="st">identified_02_T2 ~~ equal(&quot;identified_02_T1 ~~ identified_02_T1&quot;) * identified_02_T2</span>
+<span class="st">identified_03_T2 ~~ equal(&quot;identified_03_T1 ~~ identified_03_T1&quot;) * identified_03_T2</span>
+<span class="st">integrated_01_T2 ~~ equal(&quot;integrated_01_T1 ~~ integrated_01_T1&quot;) * integrated_01_T2</span>
+<span class="st">integrated_02_T2 ~~ equal(&quot;integrated_02_T1 ~~ integrated_02_T1&quot;) * integrated_02_T2</span>
+<span class="st">integrated_03_T2 ~~ equal(&quot;integrated_03_T1 ~~ integrated_03_T1&quot;) * integrated_03_T2</span>
+<span class="st">intrinsic_01_T2 ~~ equal(&quot;intrinsic_01_T1 ~~ intrinsic_01_T1&quot;) * intrinsic_01_T2</span>
+<span class="st">intrinsic_02_T2 ~~ equal(&quot;intrinsic_02_T1 ~~ intrinsic_02_T1&quot;) * intrinsic_02_T2</span>
+<span class="st">intrinsic_03_T2 ~~ equal(&quot;intrinsic_03_T1 ~~ intrinsic_03_T1&quot;) * intrinsic_03_T2</span>
+
+<span class="st"># This constrains the first intercept of indicator to 0 at T1, estimates others</span>
+<span class="st">identified_01_T1 ~ 0*1                 </span>
+<span class="st">identified_02_T1 ~ 1</span>
+<span class="st">identified_03_T1 ~ 1</span>
+<span class="st">integrated_01_T1 ~ 1</span>
+<span class="st">integrated_02_T1 ~ 1</span>
+<span class="st">integrated_03_T1 ~ 1</span>
+<span class="st">intrinsic_01_T1 ~ 1</span>
+<span class="st">intrinsic_02_T1 ~ 1</span>
+<span class="st">intrinsic_03_T1 ~ 1</span>
+
+<span class="st"># Same with t2, except the value is predicted by the intercept of the previous time point</span>
+<span class="st">identified_01_T2 ~ 0 * 1</span>
+<span class="st">identified_02_T2 ~ equal(&quot;identified_02_T1 ~ 1&quot;) * 1</span>
+<span class="st">identified_03_T2 ~ equal(&quot;identified_03_T1 ~ 1&quot;) * 1</span>
+<span class="st">integrated_01_T2 ~ equal(&quot;integrated_01_T1 ~ 1&quot;) * 1</span>
+<span class="st">integrated_02_T2 ~ equal(&quot;integrated_02_T1 ~ 1&quot;) * 1</span>
+<span class="st">integrated_03_T2 ~ equal(&quot;integrated_03_T1 ~ 1&quot;) * 1</span>
+<span class="st">intrinsic_01_T2 ~ equal(&quot;intrinsic_01_T1 ~ 1&quot;) * 1</span>
+<span class="st">intrinsic_02_T2 ~ equal(&quot;intrinsic_02_T1 ~ 1&quot;) * 1</span>
+<span class="st">intrinsic_03_T2 ~ equal(&quot;intrinsic_03_T1 ~ 1&quot;) * 1</span>
+<span class="st">&#39;</span>
+
+fitMILCS &lt;-<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">lavaan</span>(MILCS, <span class="dt">data =</span> data_MILCS, <span class="dt">estimator=</span><span class="st">&#39;mlr&#39;</span>, <span class="dt">fixed.x =</span> <span class="ot">FALSE</span>, <span class="dt">missing=</span><span class="st">&#39;fiml&#39;</span>)
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: some cases are empty and will be ignored:
+##   4 29 37 76 134 245 351 352 385 493 494 495 623 722 772 774 782 787 791 792 921 967 1112
+lavaan<span class="op">::</span><span class="kw">summary</span>(fitMILCS, <span class="dt">fit.measures=</span><span class="ot">TRUE</span>, <span class="dt">standardized=</span><span class="ot">TRUE</span>, <span class="dt">rsquare=</span><span class="ot">TRUE</span>)
+## lavaan (0.5-23.1097) converged normally after  75 iterations
+## 
+##                                                   Used       Total
+##   Number of observations                          1142        1165
+## 
+##   Number of missing patterns                        53
+## 
+##   Estimator                                         ML      Robust
+##   Minimum Function Test Statistic             1453.540    1064.845
+##   Degrees of freedom                               150         150
+##   P-value (Chi-square)                           0.000       0.000
+##   Scaling correction factor                                  1.365
+##     for the Yuan-Bentler correction
+## 
+## Model test baseline model:
+## 
+##   Minimum Function Test Statistic            16338.223   10806.498
+##   Degrees of freedom                               153         153
+##   P-value                                        0.000       0.000
+## 
+## User model versus baseline model:
+## 
+##   Comparative Fit Index (CFI)                    0.919       0.914
+##   Tucker-Lewis Index (TLI)                       0.918       0.912
+## 
+##   Robust Comparative Fit Index (CFI)                         0.922
+##   Robust Tucker-Lewis Index (TLI)                            0.921
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)                     NA          NA
+##   Scaling correction factor                                  0.868
+##     for the MLR correction
+##   Loglikelihood unrestricted model (H1)             NA          NA
+##   Scaling correction factor                                  1.377
+##     for the MLR correction
+## 
+##   Number of free parameters                         39          39
+##   Akaike (AIC)                                      NA          NA
+##   Bayesian (BIC)                                    NA          NA
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.087       0.073
+##   90 Percent Confidence Interval          0.083  0.091       0.070  0.077
+##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+## 
+##   Robust RMSEA                                               0.085
+##   90 Percent Confidence Interval                             0.081  0.090
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.043       0.043
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Observed
+##   Standard Errors                   Robust.huber.white
+## 
+## Latent Variables:
+##                                    Estimate  Std.Err  z-value  P(&gt;|z|)
+##   autonomous_T1 =~                                                    
+##                                       1.000                           
+##                             (.p2.)    1.086    0.036   30.308    0.000
+##                             (.p3.)    1.347    0.047   28.387    0.000
+##                             (.p4.)    1.289    0.047   27.648    0.000
+##                             (.p5.)    1.320    0.049   27.194    0.000
+##                             (.p6.)    1.349    0.051   26.291    0.000
+##                             (.p7.)    1.291    0.047   27.244    0.000
+##                             (.p8.)    1.222    0.050   24.654    0.000
+##                             (.p9.)    1.282    0.051   25.268    0.000
+##   autonomous_T2 =~                                                    
+##                                       1.000                           
+##                (atnms_T1=~d_02_T1)    1.086    0.036   30.308    0.000
+##                (atnms_T1=~d_03_T1)    1.347    0.047   28.387    0.000
+##              (atnms_T1=~ntg_01_T1)    1.289    0.047   27.648    0.000
+##              (atnms_T1=~ntg_02_T1)    1.320    0.049   27.194    0.000
+##              (atnms_T1=~ntg_03_T1)    1.349    0.051   26.291    0.000
+##              (atnms_T1=~ntr_01_T1)    1.291    0.047   27.244    0.000
+##              (atnms_T1=~ntr_02_T1)    1.222    0.050   24.654    0.000
+##              (atnms_T1=~ntr_03_T1)    1.282    0.051   25.268    0.000
+##   d_aut1 =~                                                           
+##                                       1.000                           
+##    Std.lv  Std.all
+##                   
+##     0.823    0.617
+##     0.894    0.702
+##     1.109    0.858
+##     1.061    0.826
+##     1.087    0.852
+##     1.111    0.819
+##     1.063    0.871
+##     1.006    0.830
+##     1.056    0.847
+##                   
+##     0.813    0.612
+##     0.883    0.698
+##     1.095    0.855
+##     1.048    0.823
+##     1.073    0.849
+##     1.097    0.815
+##     1.049    0.868
+##     0.993    0.827
+##     1.043    0.844
+##                   
+##     0.683    0.683
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   autonomous_T2 ~                                                       
+##     autonomous_T1     1.000                               1.013    1.013
+##   d_aut1 ~                                                              
+##     autonomous_T1    -0.240    0.025   -9.447    0.000   -0.356   -0.356
+## 
+## Covariances:
+##                       Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv
+##  .identified_01_T1 ~~                                             
+##    .identifd_01_T2       0.291    0.053    5.473    0.000    0.291
+##  .identified_02_T1 ~~                                             
+##    .identifd_02_T2       0.199    0.042    4.705    0.000    0.199
+##  .identified_03_T1 ~~                                             
+##    .identifd_03_T2       0.103    0.023    4.458    0.000    0.103
+##  .integrated_01_T1 ~~                                             
+##    .integrtd_01_T2       0.153    0.024    6.387    0.000    0.153
+##  .integrated_02_T1 ~~                                             
+##    .integrtd_02_T2       0.131    0.024    5.401    0.000    0.131
+##  .integrated_03_T1 ~~                                             
+##    .integrtd_03_T2       0.266    0.031    8.662    0.000    0.266
+##  .intrinsic_01_T1 ~~                                              
+##    .intrinsc_01_T2       0.089    0.019    4.649    0.000    0.089
+##  .intrinsic_02_T1 ~~                                              
+##    .intrinsc_02_T2       0.162    0.029    5.603    0.000    0.162
+##  .intrinsic_03_T1 ~~                                              
+##    .intrinsc_03_T2       0.142    0.024    5.784    0.000    0.142
+##   Std.all
+##          
+##     0.264
+##          
+##     0.242
+##          
+##     0.234
+##          
+##     0.292
+##          
+##     0.295
+##          
+##     0.439
+##          
+##     0.246
+##          
+##     0.356
+##          
+##     0.322
+## 
+## Intercepts:
+##                      Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .                    0.000                               0.000    0.000
+##    .                    0.776    0.081    9.532    0.000    1.397    1.397
+##                         3.089    0.036   86.222    0.000    3.752    3.752
+##    .                    0.000                               0.000    0.000
+##    .          (.56.)    0.342    0.109    3.125    0.002    0.342    0.268
+##    .          (.57.)   -0.808    0.144   -5.627    0.000   -0.808   -0.625
+##    .          (.58.)   -0.685    0.140   -4.891    0.000   -0.685   -0.533
+##    .          (.59.)   -0.790    0.144   -5.473    0.000   -0.790   -0.620
+##    .          (.60.)   -1.079    0.155   -6.984    0.000   -1.079   -0.796
+##    .          (.61.)   -0.321    0.144   -2.221    0.026   -0.321   -0.263
+##    .          (.62.)   -0.152    0.153   -0.990    0.322   -0.152   -0.125
+##    .          (.63.)   -0.466    0.156   -2.980    0.003   -0.466   -0.374
+##    .                    0.000                               0.000    0.000
+##    .    (id_02_T1~1)    0.342    0.109    3.125    0.002    0.342    0.270
+##    .    (id_03_T1~1)   -0.808    0.144   -5.627    0.000   -0.808   -0.631
+##    .  (intg_01_T1~1)   -0.685    0.140   -4.891    0.000   -0.685   -0.538
+##    .  (intg_02_T1~1)   -0.790    0.144   -5.473    0.000   -0.790   -0.626
+##    .  (intg_03_T1~1)   -1.079    0.155   -6.984    0.000   -1.079   -0.802
+##    .  (intr_01_T1~1)   -0.321    0.144   -2.221    0.026   -0.321   -0.265
+##    .  (intr_02_T1~1)   -0.152    0.153   -0.990    0.322   -0.152   -0.126
+##    .  (intr_03_T1~1)   -0.466    0.156   -2.980    0.003   -0.466   -0.377
+## 
+## Variances:
+##                                  Estimate  Std.Err  z-value  P(&gt;|z|)
+##    .                                0.000                           
+##    .                                0.269    0.027    9.910    0.000
+##                                     0.678    0.052   13.150    0.000
+##    .                      (.28.)    1.102    0.049   22.268    0.000
+##    .                      (.29.)    0.821    0.045   18.071    0.000
+##    .                      (.30.)    0.442    0.026   16.911    0.000
+##    .                      (.31.)    0.523    0.029   18.307    0.000
+##    .                      (.32.)    0.444    0.026   17.076    0.000
+##    .                      (.33.)    0.606    0.032   18.941    0.000
+##    .                      (.34.)    0.361    0.020   18.281    0.000
+##    .                      (.35.)    0.456    0.030   15.214    0.000
+##    .                      (.36.)    0.440    0.029   15.116    0.000
+##    .          (id_01_T1~~_01_T1)    1.102    0.049   22.268    0.000
+##    .          (id_02_T1~~_02_T1)    0.821    0.045   18.071    0.000
+##    .          (id_03_T1~~_03_T1)    0.442    0.026   16.911    0.000
+##    .        (intg_01_T1~~_01_T1)    0.523    0.029   18.307    0.000
+##    .        (intg_02_T1~~_02_T1)    0.444    0.026   17.076    0.000
+##    .        (intg_03_T1~~_03_T1)    0.606    0.032   18.941    0.000
+##    .        (intr_01_T1~~_01_T1)    0.361    0.020   18.281    0.000
+##    .        (intr_02_T1~~_02_T1)    0.456    0.030   15.214    0.000
+##    .        (intr_03_T1~~_03_T1)    0.440    0.029   15.116    0.000
+##    Std.lv  Std.all
+##     0.000    0.000
+##     0.873    0.873
+##     1.000    1.000
+##     1.102    0.619
+##     0.821    0.507
+##     0.442    0.264
+##     0.523    0.317
+##     0.444    0.273
+##     0.606    0.330
+##     0.361    0.242
+##     0.456    0.311
+##     0.440    0.283
+##     1.102    0.625
+##     0.821    0.513
+##     0.442    0.269
+##     0.523    0.323
+##     0.444    0.278
+##     0.606    0.335
+##     0.361    0.247
+##     0.456    0.316
+##     0.440    0.288
+## 
+## R-Square:
+##                    Estimate
+##     autonomous_T2     1.000
+##     d_aut1            0.127
+##     identifd_01_T1    0.381
+##     identifd_02_T1    0.493
+##     identifd_03_T1    0.736
+##     integrtd_01_T1    0.683
+##     integrtd_02_T1    0.727
+##     integrtd_03_T1    0.670
+##     intrinsc_01_T1    0.758
+##     intrinsc_02_T1    0.689
+##     intrinsc_03_T1    0.717
+##     identifd_01_T2    0.375
+##     identifd_02_T2    0.487
+##     identifd_03_T2    0.731
+##     integrtd_01_T2    0.677
+##     integrtd_02_T2    0.722
+##     integrtd_03_T2    0.665
+##     intrinsc_01_T2    0.753
+##     intrinsc_02_T2    0.684
+##     intrinsc_03_T2    0.712
+
+lavaan<span class="op">::</span><span class="kw">coef</span>(fitMILCS) 
+##                               .p2.                               .p3. 
+##                              1.086                              1.347 
+##                               .p4.                               .p5. 
+##                              1.289                              1.320 
+##                               .p6.                               .p7. 
+##                              1.349                              1.291 
+##                               .p8.                               .p9. 
+##                              1.222                              1.282 
+##    autonomous_T1=~identified_02_T1    autonomous_T1=~identified_03_T1 
+##                              1.086                              1.347 
+##    autonomous_T1=~integrated_01_T1    autonomous_T1=~integrated_02_T1 
+##                              1.289                              1.320 
+##    autonomous_T1=~integrated_03_T1     autonomous_T1=~intrinsic_01_T1 
+##                              1.349                              1.291 
+##     autonomous_T1=~intrinsic_02_T1     autonomous_T1=~intrinsic_03_T1 
+##                              1.222                              1.282 
+##                           d_aut1~1                    autonomous_T1~1 
+##                              0.776                              3.089 
+##                     d_aut1~~d_aut1       autonomous_T1~~autonomous_T1 
+##                              0.269                              0.678 
+##               d_aut1~autonomous_T1                              .p28. 
+##                             -0.240                              1.102 
+##                              .p29.                              .p30. 
+##                              0.821                              0.442 
+##                              .p31.                              .p32. 
+##                              0.523                              0.444 
+##                              .p33.                              .p34. 
+##                              0.606                              0.361 
+##                              .p35.                              .p36. 
+##                              0.456                              0.440 
+## identified_01_T1~~identified_01_T2 identified_02_T1~~identified_02_T2 
+##                              0.291                              0.199 
+## identified_03_T1~~identified_03_T2 integrated_01_T1~~integrated_01_T2 
+##                              0.103                              0.153 
+## integrated_02_T1~~integrated_02_T2 integrated_03_T1~~integrated_03_T2 
+##                              0.131                              0.266 
+##   intrinsic_01_T1~~intrinsic_01_T2   intrinsic_02_T1~~intrinsic_02_T2 
+##                              0.089                              0.162 
+##   intrinsic_03_T1~~intrinsic_03_T2 identified_01_T1~~identified_01_T1 
+##                              0.142                              1.102 
+## identified_02_T1~~identified_02_T1 identified_03_T1~~identified_03_T1 
+##                              0.821                              0.442 
+## integrated_01_T1~~integrated_01_T1 integrated_02_T1~~integrated_02_T1 
+##                              0.523                              0.444 
+## integrated_03_T1~~integrated_03_T1   intrinsic_01_T1~~intrinsic_01_T1 
+##                              0.606                              0.361 
+##   intrinsic_02_T1~~intrinsic_02_T1   intrinsic_03_T1~~intrinsic_03_T1 
+##                              0.456                              0.440 
+##                              .p56.                              .p57. 
+##                              0.342                             -0.808 
+##                              .p58.                              .p59. 
+##                             -0.685                             -0.790 
+##                              .p60.                              .p61. 
+##                             -1.079                             -0.321 
+##                              .p62.                              .p63. 
+##                             -0.152                             -0.466 
+##                 identified_02_T1~1                 identified_03_T1~1 
+##                              0.342                             -0.808 
+##                 integrated_01_T1~1                 integrated_02_T1~1 
+##                             -0.685                             -0.790 
+##                 integrated_03_T1~1                  intrinsic_01_T1~1 
+##                             -1.079                             -0.321 
+##                  intrinsic_02_T1~1                  intrinsic_03_T1~1 
+##                             -0.152                             -0.466
+
+<span class="co"># Plot raw scores </span>
+drawit &lt;-<span class="st"> </span><span class="cf">function</span>(regulation, <span class="dt">intervention_allocation =</span> <span class="st">&quot;Control group&quot;</span>) {
+pd &lt;-<span class="st"> </span><span class="kw">position_dodge</span>(<span class="fl">0.4</span>) <span class="co"># see: https://stackoverflow.com/questions/39533456/r-how-to-jitter-both-geom-line-and-geom-point-in-ggplot2-linegraph</span>
+
+<span class="co"># Show change scores; see https://stackoverflow.com/questions/50181772/line-color-and-width-by-slope-in-ggplot2</span>
+
+data_MILCS <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">intervention =</span> <span class="kw">factor</span>(intervention, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Control group&quot;</span>, <span class="st">&quot;Intervention group&quot;</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>tidyr<span class="op">::</span><span class="kw">gather</span>(variable, value, <span class="op">-</span>id, <span class="op">-</span>intervention) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>tidyr<span class="op">::</span><span class="kw">separate</span>(variable, <span class="kw">c</span>(<span class="st">&quot;item&quot;</span>, <span class="st">&quot;time&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;_T&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">value =</span> <span class="kw">jitter</span>(value, <span class="dt">amount =</span> <span class="fl">0.1</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># Y-axis jitter to make points more readable</span>
+<span class="st">  </span><span class="kw">group_by</span>(id,item) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">slope =</span> (value[time<span class="op">==</span><span class="dv">2</span>] <span class="op">-</span><span class="st"> </span>value[time<span class="op">==</span><span class="dv">1</span>])<span class="op">/</span>(<span class="dv">2</span><span class="op">-</span><span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(stringr<span class="op">::</span><span class="kw">str_detect</span>(item, regulation)) <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(intervention <span class="op">==</span><span class="st"> </span>intervention_allocation) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">na.omit</span>(.) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> time, <span class="dt">y =</span> value, <span class="dt">group =</span> id)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> .<span class="dv">2</span>, <span class="dt">position =</span> pd) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> slope), <span class="dt">alpha =</span> .<span class="dv">2</span>, <span class="dt">position =</span> pd) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_viridis_c</span>(<span class="dt">option =</span> <span class="st">&quot;inferno&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="kw">paste0</span>(<span class="st">&#39;Multiple indicator LCS model:&#39;</span>, intervention_allocation)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&#39;Autonomous motivation scores&#39;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&#39;Time points&#39;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="st">&quot;item&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position=</span><span class="st">&quot;bottom&quot;</span>) <span class="co"># change to &quot;none&quot; to get rid of it</span>
+}
+
+<span class="co"># drawit(regulation = &quot;integrated&quot;)</span>
+
+<span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">c</span>(<span class="st">&quot;integrated&quot;</span>, <span class="st">&quot;identified&quot;</span>, <span class="st">&quot;intrinsic&quot;</span>)) {
+<span class="cf">for</span> (j <span class="cf">in</span> <span class="kw">c</span>(<span class="st">&quot;Control group&quot;</span>, <span class="st">&quot;Intervention group&quot;</span>)) {
+<span class="kw">print</span>(<span class="kw">drawit</span>(<span class="dt">regulation =</span> i, <span class="dt">intervention_allocation =</span> j))
+}}
+## Warning: attributes are not identical across measure variables;
+## they will be dropped
+## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre></div>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-1.png" width="2100" /></p>
+<pre><code>## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-2.png" width="2100" /></p>
+<pre><code>## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-3.png" width="2100" /></p>
+<pre><code>## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-4.png" width="2100" /></p>
+<pre><code>## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-5.png" width="2100" /><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-6.png" width="2100" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># Plot the SEM model</span>
+semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitMILCS, <span class="st">&quot;std&quot;</span>, <span class="dt">label.cex =</span> .<span class="dv">6</span>, <span class="dt">label.scale =</span> <span class="ot">FALSE</span>, <span class="dt">edge.label.cex =</span> <span class="dv">1</span>, <span class="dt">layout =</span> <span class="st">&quot;tree&quot;</span>,
+                  <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
+                               <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
+                               <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
+<p><img src="Latent_change_score_models_files/figure-html/unnamed-chunk-1-7.png" width="2100" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="co">#Fit the Bivariate Latent Change Score model to simulated data</span>
+BLCS&lt;-<span class="st">&#39;</span>
+
+<span class="st">COG_T2 ~ 1*COG_T1     # This parameter regresses COG_T2 perfectly on COG_T1</span>
+<span class="st">dCOG1 =~ 1*COG_T2     # This defines the latent change score factor as measured perfectly by scores on COG_T2</span>
+<span class="st">dCOG1 ~ 1             # This estimates the intercept of the change score </span>
+<span class="st">COG_T1 ~  1           # This estimates the intercept of COG_T1 </span>
+<span class="st">COG_T2 ~ 0*1          # This constrains the intercept of COG_T2 to 0</span>
+
+<span class="st">NEU_T2 ~ 1*NEU_T1     # This parameter regresses NEU_T2 perfectly on NEU_T1</span>
+<span class="st">dNEU1 =~ 1*NEU_T2     # This defines the latent change score factor as measured perfectly by scores on NEU_T2</span>
+<span class="st">NEU_T2 ~ 0*1          # This line constrains the intercept of NEU_T2 to 0</span>
+<span class="st">NEU_T2 ~~ 0*NEU_T2    # This fixes the variance of the NEU_T1 to 0  </span>
+
+<span class="st">dCOG1 ~~  dCOG1       # This estimates the variance of the change scores</span>
+<span class="st">COG_T1 ~~   COG_T1    # This estimates the variance of the COG_T1 </span>
+<span class="st">COG_T2 ~~ 0*COG_T2    # This fixes the variance of the COG_T2 to 0  </span>
+
+<span class="st">dNEU1 ~ 1             # This estimates the intercept of the change score </span>
+<span class="st">NEU_T1 ~ 1            # This estimates the intercept of NEU_T1 </span>
+<span class="st">dNEU1 ~~ dNEU1        # This estimates the variance of the change scores </span>
+<span class="st">NEU_T1 ~~ NEU_T1      # This estimates the variance of NEU_T1 </span>
+
+<span class="st">dNEU1~COG_T1+NEU_T1   # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
+<span class="st">dCOG1~NEU_T1+COG_T1   # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
+
+<span class="st">COG_T1 ~~  NEU_T1     # This estimates the COG_T1 NEU_T1 covariance</span>
+<span class="st">dCOG1~~dNEU1          # This estimates the dCOG and dNEU covariance</span>
+<span class="st">&#39;</span>
+
+fitBLCS &lt;-<span class="st"> </span><span class="kw">lavaan</span>(BLCS, <span class="dt">data=</span>simdatBLCS, <span class="dt">estimator=</span><span class="st">&#39;mlr&#39;</span>,<span class="dt">fixed.x=</span><span class="ot">FALSE</span>,<span class="dt">missing=</span><span class="st">&#39;fiml&#39;</span>)
+<span class="kw">summary</span>(fitBLCS, <span class="dt">fit.measures=</span><span class="ot">TRUE</span>, <span class="dt">standardized=</span><span class="ot">TRUE</span>, <span class="dt">rsquare=</span><span class="ot">TRUE</span>)
+
+<span class="co">#Visualize the raw data</span>
+
+<span class="kw">theme_set</span>(<span class="kw">theme_grey</span>(<span class="dt">base_size =</span> <span class="dv">18</span>)) <span class="co">#increase text size</span>
+id=<span class="kw">factor</span>(<span class="dv">1</span><span class="op">:</span>samplesize)
+plotdattemp=<span class="kw">data.frame</span>(<span class="kw">c</span>(simdatBLCS<span class="op">$</span>COG_T1,simdatBLCS<span class="op">$</span>NEU_T1),<span class="kw">c</span>(simdatBLCS<span class="op">$</span>COG_T2,simdatBLCS<span class="op">$</span>NEU_T2),<span class="kw">as.factor</span>(<span class="kw">c</span>(id,id)),<span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&#39;COG&#39;</span>,<span class="dt">times=</span>samplesize),<span class="kw">rep</span>(<span class="st">&#39;NEU&#39;</span>,<span class="dt">times=</span>samplesize)))
+<span class="kw">colnames</span>(plotdattemp)&lt;-<span class="kw">c</span>(<span class="st">&#39;T1&#39;</span>, <span class="st">&#39;T2&#39;</span>,<span class="st">&#39;id&#39;</span>,<span class="st">&#39;Domain&#39;</span>)
+plotdat&lt;-<span class="kw">melt</span>(plotdattemp,<span class="dt">by=</span><span class="st">&#39;id&#39;</span>)
+<span class="kw">ggplot</span>(plotdat,<span class="kw">aes</span>(variable,value,<span class="dt">group=</span>id,<span class="dt">col=</span>Domain))<span class="op">+</span><span class="kw">geom_point</span>(<span class="dt">size=</span><span class="dv">3</span>,<span class="dt">alpha=</span>.<span class="dv">7</span>)<span class="op">+</span><span class="kw">geom_line</span>(<span class="dt">alpha=</span>.<span class="dv">7</span>)<span class="op">+</span><span class="kw">ggtitle</span>(<span class="st">&#39;Bivariate Latent Change Score model&#39;</span>)<span class="op">+</span><span class="kw">ylab</span>(<span class="st">&#39;Scores&#39;</span>)<span class="op">+</span><span class="kw">xlab</span>(<span class="st">&#39;Time points&#39;</span>)<span class="op">+</span><span class="kw">facet_grid</span>(<span class="op">~</span>Domain)
+
+  <span class="co"># identified =~ PA_identified_01_T1 + PA_identified_02_T1 + PA_identified_03_T1</span>
+  <span class="co"># integrated =~ PA_integrated_01_T1 + PA_integrated_02_T1 + PA_integrated_03_T1</span>
+  <span class="co"># intrinsic =~ PA_intrinsic_01_T1 + PA_intrinsic_02_T1 + PA_intrinsic_03_T1</span>
+  <span class="co"># introjected =~ PA_introjected_01_T1 + PA_introjected_02_T1</span>
+  <span class="co"># extrinsic =~ PA_extrinsic_01_T1 + PA_extrinsic_02_T1 + PA_extrinsic_03_T1 </span>
+  <span class="co"># amotivation =~ PA_amotivation_01_T1 + PA_amotivation_02_T1 + PA_amotivation_03_T1 + PA_amotivation_04_T1</span></code></pre></div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
