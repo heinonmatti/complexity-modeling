@@ -9,6 +9,14 @@ source("T1_plus_T3-datasetup.R")
 
 # Coupling of Autonomous motivation and BCTs
 
+Conceptually, this model describes the mutualistic coupling of autonomous motivation to do physical activity (PA) and the use of behaviour/motivation management techniques (BCTs). 
+
+Autonomous motivation means doing things because they are pleasurable, meaningful or fitting with one's identity.
+
+BCTs are different techniques which help in actualising PA, as in setting goals, considering how PA fits with one's values, etc.
+
+The variables in this code chunk are mean scores of 9 (autonomous motivation) and 19 (BCTs) items.
+
 ```{r aut-bct-coupling}
 # The model in this script is originally part of the manuscript 
 #'Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications'
