@@ -175,10 +175,6 @@ semPlot::semPaths(fitBLCS_constrained,
 
 ```
 
-```{r, results = "asis"}
-lavaan::anova(fitBLCS, fitBLCS_constrained)
-```
-
 Now, we constrain the parameters which ought to differ across intervention and control groups, to see if model fit changes.
 
 First, constrain the intercept of the change score in Autonomous.
@@ -254,10 +250,6 @@ semPlot::semPaths(fitBLCS_constrained_equalChanges_autonomous,
 
 ```
 
-```{r, results = "asis"}
-lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_autonomous)
-```
-
 We can see that model fit and out-of-sample prediction gets worse. Same happens when we constrain the change in BCTs, instead:
 
 ```{r}
@@ -329,10 +321,6 @@ semPlot::semPaths(fitBLCS_constrained_equalChanges_bcts,
                                int = viridis::viridis(3, begin = 0.3)[3]))
 
 
-```
-
-```{r, results = "asis"}
-lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_bcts)
 ```
 
 What if the intervention changed the coupling effect?
@@ -410,10 +398,6 @@ semPlot::semPaths(fitBLCS_constrained_eqCoupling_bctToAut,
 
 ```
 
-```{r, results = "asis"}
-lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_bctToAut)
-```
-
 Here we constrain the coupling from autonomous motivation to BCTs:
 
 ```{r}
@@ -484,9 +468,5 @@ semPlot::semPaths(fitBLCS_constrained_eqCoupling_autToBct,
                                man = viridis::viridis(3, begin = 0.3)[2], 
                                int = viridis::viridis(3, begin = 0.3)[3]))
 
-
 ```
 
-```{r, results = "asis"}
-lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_autToBct)
-```

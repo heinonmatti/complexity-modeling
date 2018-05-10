@@ -869,12 +869,6 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-1-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-1-2.png" width="2100" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained)</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
-  </script>
-</div>
 <p>Now, we constrain the parameters which ought to differ across intervention and control groups, to see if model fit changes.</p>
 <p>First, constrain the intercept of the change score in Autonomous.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
@@ -1128,13 +1122,7 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                   <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
-<p><img src="El-Rogier_files/figure-html/unnamed-chunk-3-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-3-2.png" width="2100" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_autonomous)</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"11298.67","3":"11393.43","4":"1.152864e+03","5":"192.8677","6":"2","7":"1.316145e-42","_rn_":"fitBLCS_constrained_equalChanges_autonomous"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
-  </script>
-</div>
+<p><img src="El-Rogier_files/figure-html/unnamed-chunk-2-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-2-2.png" width="2100" /></p>
 <p>We can see that model fit and out-of-sample prediction gets worse. Same happens when we constrain the change in BCTs, instead:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
@@ -1387,13 +1375,7 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                   <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
-<p><img src="El-Rogier_files/figure-html/unnamed-chunk-5-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-5-2.png" width="2100" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_bcts)</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"11204.34","3":"11299.11","4":"1.058537e+03","5":"216.9740","6":"2","7":"7.668382e-48","_rn_":"fitBLCS_constrained_equalChanges_bcts"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
-  </script>
-</div>
+<p><img src="El-Rogier_files/figure-html/unnamed-chunk-3-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-3-2.png" width="2100" /></p>
 <p>What if the intervention changed the coupling effect?</p>
 <p>Here we constrain the coupling from BCTs to autonomous motivation:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
@@ -1647,13 +1629,7 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                   <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
-<p><img src="El-Rogier_files/figure-html/unnamed-chunk-7-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-7-2.png" width="2100" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_bctToAut)</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"13004.88","3":"13099.64","4":"2.859072e+03","5":"1053.8517","6":"2","7":"1.442122e-229","_rn_":"fitBLCS_constrained_eqCoupling_bctToAut"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
-  </script>
-</div>
+<p><img src="El-Rogier_files/figure-html/unnamed-chunk-4-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-4-2.png" width="2100" /></p>
 <p>Here we constrain the coupling from autonomous motivation to BCTs:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
@@ -1906,13 +1882,7 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                   <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
-<p><img src="El-Rogier_files/figure-html/unnamed-chunk-9-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-9-2.png" width="2100" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_autToBct)</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"12364.80","3":"12459.56","4":"2.218992e+03","5":"990.8782","6":"2","7":"6.815929e-216","_rn_":"fitBLCS_constrained_eqCoupling_autToBct"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
-  </script>
-</div>
+<p><img src="El-Rogier_files/figure-html/unnamed-chunk-5-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-5-2.png" width="2100" /></p>
 </div>
 
 
