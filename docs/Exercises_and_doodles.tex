@@ -1,0 +1,572 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Complexity modeling Sayama},
+            pdfauthor={Matti Heino},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Complexity modeling Sayama}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Matti Heino}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{29 joulukuuta 2017}
+
+
+\begin{document}
+\maketitle
+
+This document contains dabbling with the models presented in Hiroki
+Sayama's complexity book, as well as some random excursions to
+nonlinearities.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{r <-}\StringTok{ }\FloatTok{2.5}
+\NormalTok{x <-}\StringTok{ }\FloatTok{0.2}
+\NormalTok{N <-}\StringTok{ }\DecValTok{500}
+\NormalTok{M <-}\StringTok{ }\DecValTok{100}
+
+\NormalTok{LogisticMap <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(r, x, N, M)\{}
+  \CommentTok{# r: bifurcation parameter}
+  \CommentTok{# x: initial value}
+  \CommentTok{# N: Number of iteration}
+  \CommentTok{# M: Number of iteration points to be returned}
+\NormalTok{  z <-}\StringTok{ }\DecValTok{1}\OperatorTok{:}\NormalTok{N}
+\NormalTok{  z[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{x}
+  \ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \KeywordTok{c}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{(N}\OperatorTok{-}\DecValTok{1}\NormalTok{)))\{}
+\NormalTok{    z[i}\OperatorTok{+}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{r }\OperatorTok{*}\NormalTok{z[i]  }\OperatorTok{*}\StringTok{ }\NormalTok{(}\DecValTok{1} \OperatorTok{-}\StringTok{ }\NormalTok{z[i])}
+\NormalTok{  , eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+  \CommentTok{# Return the last M iterations }
+\NormalTok{  z[}\KeywordTok{c}\NormalTok{((N}\OperatorTok{-}\NormalTok{M)}\OperatorTok{:}\NormalTok{N)]}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{maps <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+    \StringTok{"intervention"}\NormalTok{ =}\StringTok{ }\KeywordTok{LogisticMap}\NormalTok{(}\DataTypeTok{r =} \FloatTok{3.9}\NormalTok{, }\DataTypeTok{x =} \FloatTok{0.5}\NormalTok{, }\DataTypeTok{N =} \DecValTok{400}\NormalTok{, }\DataTypeTok{M =} \DecValTok{400}\NormalTok{) }\OperatorTok{*}\StringTok{ }\DecValTok{100}\NormalTok{,}
+    \StringTok{"control"}\NormalTok{ =}\StringTok{ }\KeywordTok{LogisticMap}\NormalTok{(}\DataTypeTok{r =} \FloatTok{3.9}\NormalTok{, }\DataTypeTok{x =} \FloatTok{0.4}\NormalTok{, }\DataTypeTok{N =} \DecValTok{400}\NormalTok{, }\DataTypeTok{M =} \DecValTok{400}\NormalTok{) }\OperatorTok{*}\StringTok{ }\DecValTok{100}\NormalTok{)}
+
+\NormalTok{maps <-}\StringTok{ }\NormalTok{maps }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{mutate}\NormalTok{(}
+  \DataTypeTok{day =} \DecValTok{1}\OperatorTok{:}\DecValTok{400}\NormalTok{,}
+  \DataTypeTok{movingAverage_intervention =} \KeywordTok{rollmean}\NormalTok{(maps}\OperatorTok{$}\NormalTok{intervention, }\DecValTok{7}\NormalTok{, }\DataTypeTok{fill =} \OtherTok{NA}\NormalTok{, }\DataTypeTok{align =} \StringTok{"right"}\NormalTok{),}
+  \DataTypeTok{movingAverage_control =} \KeywordTok{rollmean}\NormalTok{(maps}\OperatorTok{$}\NormalTok{control, }\DecValTok{7}\NormalTok{, }\DataTypeTok{fill =} \OtherTok{NA}\NormalTok{, }\DataTypeTok{align =} \StringTok{"right"}\NormalTok{),}
+  \CommentTok{# if there are 0 decimals when dividing day by 10, include point:}
+  \DataTypeTok{every10th_intervention =} \KeywordTok{ifelse}\NormalTok{(day }\OperatorTok{%%}\StringTok{ }\DecValTok{10} \OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{, intervention, }\OtherTok{NA}\NormalTok{),}
+  \DataTypeTok{every10th_control =} \KeywordTok{ifelse}\NormalTok{(day }\OperatorTok{%%}\StringTok{ }\DecValTok{10} \OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{, control, }\OtherTok{NA}\NormalTok{)) }
+
+\CommentTok{# Data frame containing only three points, to create regression line in the plot:}
+\NormalTok{data2 <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{y =} \KeywordTok{c}\NormalTok{(maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{10}\NormalTok{], }
+\NormalTok{                          maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{200}\NormalTok{],}
+\NormalTok{                          maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{390}\NormalTok{]),}
+                    \DataTypeTok{x =} \KeywordTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{200}\NormalTok{, }\DecValTok{390}\NormalTok{))}
+
+\NormalTok{maps }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ day, }\DataTypeTok{y =}\NormalTok{ intervention, }\DataTypeTok{group =} \DecValTok{1}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\CommentTok{# geom_line(colour = "grey") + }
+\StringTok{  }\CommentTok{# geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +}
+\StringTok{  }\CommentTok{# geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +}
+\StringTok{  }\CommentTok{# Plot every 10th point, ignoring the fact that there are missings in between:}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ maps[}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(maps}\OperatorTok{$}\NormalTok{every10th_intervention), ], }
+            \KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ day, }\DataTypeTok{y =}\NormalTok{ every10th_intervention), }\DataTypeTok{color =} \StringTok{"darkgrey"}\NormalTok{, }\DataTypeTok{size =} \FloatTok{0.75}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ maps[}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(maps}\OperatorTok{$}\NormalTok{every10th_intervention), ], }
+          \KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ day, }\DataTypeTok{y =}\NormalTok{ every10th_intervention), }\DataTypeTok{color =} \StringTok{"blue"}\NormalTok{, }\DataTypeTok{size =} \FloatTok{0.8}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_smooth}\NormalTok{(}\DataTypeTok{method =} \StringTok{"lm"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\CommentTok{# geom_line(data = maps[!is.na(maps$every10th_control), ],}
+\StringTok{  }\CommentTok{#          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \DecValTok{10}\NormalTok{, }\DataTypeTok{y =}\NormalTok{ maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{10}\NormalTok{]), }\DataTypeTok{color =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{2}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \DecValTok{200}\NormalTok{, }\DataTypeTok{y =}\NormalTok{ maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{200}\NormalTok{]), }\DataTypeTok{color =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{2}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \DecValTok{390}\NormalTok{, }\DataTypeTok{y =}\NormalTok{ maps}\OperatorTok{$}\NormalTok{every10th_intervention[}\DecValTok{390}\NormalTok{]), }\DataTypeTok{color =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{2}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_smooth}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ data2, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ x, }\DataTypeTok{y =}\NormalTok{ y), }
+              \DataTypeTok{method =} \StringTok{"lm"}\NormalTok{, }\DataTypeTok{se =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{color =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\NormalTok{papaja}\OperatorTok{::}\KeywordTok{theme_apa}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{scale_y_continuous}\NormalTok{(}\DataTypeTok{name =} \StringTok{"Percentage of max motivation"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_cartesian}\NormalTok{(}\DataTypeTok{xlim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{400}\NormalTok{), }\DataTypeTok{ylim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{100}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{maps }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(every10th_intervention)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_histogram}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\NormalTok{papaja}\OperatorTok{::}\KeywordTok{theme_apa}\NormalTok{()}
+
+\NormalTok{maps }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(intervention)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{binwidth =} \DecValTok{1}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_continuous}\NormalTok{(}\DataTypeTok{name =} \StringTok{"Percentage of max motivation"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\NormalTok{papaja}\OperatorTok{::}\KeywordTok{theme_apa}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Initialize}
+\NormalTok{a <-}\StringTok{ }\FloatTok{0.5}
+
+\NormalTok{x <-}\StringTok{ }\KeywordTok{vector}\NormalTok{()}
+\NormalTok{x[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+
+
+\CommentTok{# Update & observe}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\DecValTok{50}\NormalTok{) \{}
+\NormalTok{  x[i }\OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{a}\OperatorTok{*}\NormalTok{x[i]}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{dyn <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{rep =} \KeywordTok{seq}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{(i}\OperatorTok{+}\DecValTok{1}\NormalTok{)), x)}
+
+\KeywordTok{ggplot}\NormalTok{(dyn, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ rep, }\DataTypeTok{y =}\NormalTok{ x)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{a <-}\StringTok{ }\FloatTok{1.1}
+
+\NormalTok{initialize <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{()\{}
+\NormalTok{  x <<-}\StringTok{ }\DecValTok{1}
+\NormalTok{  x <<-}\StringTok{ }\KeywordTok{vector}\NormalTok{()}
+\NormalTok{  t <-}\StringTok{ }\DecValTok{0}
+\NormalTok{  t <<-}\StringTok{ }\KeywordTok{vector}\NormalTok{()}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{updateTime <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{()\{}
+\NormalTok{  x <<-}\StringTok{ }\NormalTok{a }\OperatorTok{*}\StringTok{ }\NormalTok{x}
+\NormalTok{  t <<-}\StringTok{ }\NormalTok{t }\OperatorTok{+}\StringTok{ }\FloatTok{0.1} 
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{0}\OperatorTok{:}\DecValTok{3}\NormalTok{) }
+  \KeywordTok{ifelse}\NormalTok{(t }\OperatorTok{<}\StringTok{ }\DecValTok{3}\NormalTok{, }\KeywordTok{c}\NormalTok{(}\KeywordTok{update}\NormalTok{(), }\KeywordTok{observe}\NormalTok{()), }\ControlFlowTok{break}\NormalTok{)}
+
+
+
+
+\NormalTok{a <-}\StringTok{ }\FloatTok{1.1}
+\NormalTok{x <-}\StringTok{ }\KeywordTok{vector}\NormalTok{()}
+\NormalTok{x[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+
+
+\CommentTok{# Update & observe}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\DecValTok{30}\NormalTok{) \{}
+\NormalTok{  x[i }\OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{a}\OperatorTok{*}\NormalTok{x[i]}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{dyn <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{rep =} \KeywordTok{seq}\NormalTok{(}\DataTypeTok{from =} \DecValTok{0}\NormalTok{, }\DataTypeTok{to =} \DecValTok{3}\NormalTok{, }\DataTypeTok{by =} \FloatTok{0.1}\NormalTok{), x)}
+
+\KeywordTok{ggplot}\NormalTok{(dyn, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ rep, }\DataTypeTok{y =}\NormalTok{ x)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Python code}\label{python-code}
+
+Example from @HirokiSayama's Introduction to the Modeling and Analysis
+of Complex Systems
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np }
+\ImportTok{import}\NormalTok{ matplotlib.pyplot }\ImportTok{as}\NormalTok{ plt}
+\NormalTok{x }\OperatorTok{=}\NormalTok{ np.arange(}\DecValTok{0}\NormalTok{, }\DecValTok{5}\NormalTok{, }\FloatTok{0.1}\NormalTok{)}\OperatorTok{;} 
+\NormalTok{y }\OperatorTok{=}\NormalTok{ np.sin(x) }
+\NormalTok{plt.plot(x, y) }
+\NormalTok{plt.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np }
+\ImportTok{import}\NormalTok{ matplotlib.pyplot }\ImportTok{as}\NormalTok{ plt}
+\NormalTok{x }\OperatorTok{=}\NormalTok{ np.arange(}\DecValTok{0}\NormalTok{, }\DecValTok{5}\NormalTok{, }\FloatTok{0.1}\NormalTok{)}\OperatorTok{;} 
+\NormalTok{y }\OperatorTok{=}\NormalTok{ np.sin(x) }
+\NormalTok{plt.plot(x, y) }
+\NormalTok{plt.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# To get this far on a uni computer with limited rights to modify directory content (WITH admin rights), I had to...}
+\CommentTok{# 0. Install newest version of Python and make sure it is in the environmental variables path; type "edit the system environment variables" in Start menu, open PATH and see if it contains the python directory.}
+\CommentTok{# 1. Open Command Prompt (press Windows button and r, then type in "cmd", or type it in start menu)}
+\CommentTok{# 2. Type the following commands: }
+\CommentTok{## pip install -t "C:/a-path-you-can-edit/pythonLibs/" matplotlib}
+\CommentTok{## pip install -t "C:/a-path-you-can-edit/pythonLibs/" numpy}
+\CommentTok{## pip install -t "C:/a-path-you-can-edit/pythonLibs/" scipy}
+\CommentTok{## pip install -t "C:/a-path-you-can-edit/pythonLibs/" networkx}
+\CommentTok{# 3. EITHER: }
+\CommentTok{## 3a. run the next four lines with code before running what you want to run.}
+\CommentTok{## import sys}
+\CommentTok{## sys.path.append("C:/LocalData/hema/pythonLibs/") # this is the library you chose}
+\CommentTok{## 3b. (Recommended) create a new environmental variable called PYTHONPATH, value of which is your library directory. }
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:/LocalData/hema/pythonLibs/"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \FloatTok{1.1}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    result }\OperatorTok{=}\NormalTok{ [x]}
+\NormalTok{    t }\OperatorTok{=} \DecValTok{0}\NormalTok{.}
+\NormalTok{    timesteps }\OperatorTok{=}\NormalTok{ [t]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    result.append(x)}
+\NormalTok{    timesteps.append(t)}
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=}\NormalTok{ a }\OperatorTok{*}\NormalTok{ x}
+\NormalTok{    t }\OperatorTok{=}\NormalTok{ t }\OperatorTok{+} \FloatTok{0.1}
+\NormalTok{initialize()}
+\ControlFlowTok{while}\NormalTok{ t }\OperatorTok{<} \DecValTok{3}\NormalTok{.:}
+\NormalTok{    update()}
+\NormalTok{    observe()}
+\CommentTok{# matplotlib.pyplot.style.use("ggplot")}
+\NormalTok{plot(timesteps, result)}
+\NormalTok{matplotlib.pyplot.show()}
+\CommentTok{# matplotlib.pyplot.savefig('figures/firstfig')}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:/LocalData/hema/pythonLibs/"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \FloatTok{1.1}
+\NormalTok{b }\OperatorTok{=} \OperatorTok{-}\DecValTok{3}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    result }\OperatorTok{=}\NormalTok{ [x]}
+\NormalTok{    t }\OperatorTok{=} \DecValTok{0}\NormalTok{.}
+\NormalTok{    timesteps }\OperatorTok{=}\NormalTok{ [t]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    result.append(x)}
+\NormalTok{    timesteps.append(t)}
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=}\NormalTok{ a }\OperatorTok{*}\NormalTok{ x }\OperatorTok{+}\NormalTok{ b}
+\NormalTok{    t }\OperatorTok{=}\NormalTok{ t }\OperatorTok{+} \FloatTok{0.1}
+\NormalTok{initialize()}
+\ControlFlowTok{while}\NormalTok{ t }\OperatorTok{<} \DecValTok{3}\NormalTok{.:}
+\NormalTok{    update()}
+\NormalTok{    observe()}
+\CommentTok{# matplotlib.pyplot.style.use("ggplot")}
+\NormalTok{plot(timesteps, result)}
+\NormalTok{matplotlib.pyplot.show()}
+\CommentTok{# matplotlib.pyplot.savefig('figures/firstfig')}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:/LocalData/hema/pythonLibs/"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \OperatorTok{-}\FloatTok{1.1}
+\NormalTok{b }\OperatorTok{=} \OperatorTok{-}\DecValTok{90}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    y }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    xresult }\OperatorTok{=}\NormalTok{ [x]}
+\NormalTok{    yresult }\OperatorTok{=}\NormalTok{ [y]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    xresult.append(x)}
+\NormalTok{    yresult.append(y)}
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    nextx }\OperatorTok{=} \FloatTok{0.05} \OperatorTok{*}\NormalTok{ x }\OperatorTok{+}\NormalTok{ y}
+\NormalTok{    nexty }\OperatorTok{=} \OperatorTok{-}\FloatTok{0.2} \OperatorTok{*}\NormalTok{ x }\OperatorTok{+}\NormalTok{ y}
+\NormalTok{    x, y }\OperatorTok{=}\NormalTok{ nextx, nexty}
+\NormalTok{initialize()}
+\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \BuiltInTok{xrange}\NormalTok{(}\DecValTok{30}\NormalTok{):}
+\NormalTok{  update()}
+\NormalTok{  observe()}
+\CommentTok{# matplotlib.pyplot.style.use("ggplot")}
+\CommentTok{# plot(xresult, 'b-')}
+\CommentTok{# plot(yresult, 'g--')}
+\CommentTok{# matplotlib.pyplot.show()}
+\NormalTok{plot(xresult, yresult)}
+\NormalTok{matplotlib.pyplot.show()}
+\CommentTok{# matplotlib.pyplot.savefig('figures/firstfig')}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{Program Files}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{Python36}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{Lib}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{site-packages"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    y }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    xresult }\OperatorTok{=}\NormalTok{ [x]}
+\NormalTok{    yresult }\OperatorTok{=}\NormalTok{ [y]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    xresult.append(x)}
+\NormalTok{    yresult.append(y)}
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, y, xresult, yresult}
+\NormalTok{    nextx }\OperatorTok{=}\NormalTok{ x }\OperatorTok{+}\NormalTok{ y}
+\NormalTok{    nexty }\OperatorTok{=}\NormalTok{ x}
+\NormalTok{    x, y }\OperatorTok{=}\NormalTok{ nextx, nexty}
+\NormalTok{initialize()}
+\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \BuiltInTok{range}\NormalTok{(}\DecValTok{30}\NormalTok{):}
+\NormalTok{  update()}
+\NormalTok{  observe()}
+\NormalTok{plot(xresult)}
+\NormalTok{matplotlib.pyplot.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# knitr::include_graphics('figures/firstfig.png')}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \FloatTok{1.1}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps }\CommentTok{###}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    result }\OperatorTok{=}\NormalTok{ [x]}
+\NormalTok{    t }\OperatorTok{=} \DecValTok{0}\NormalTok{. }\CommentTok{###}
+\NormalTok{    timesteps }\OperatorTok{=}\NormalTok{ [t] }\CommentTok{###}
+    
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps }\CommentTok{###}
+\NormalTok{    result.append(x)}
+\NormalTok{    timesteps.append(t) }\CommentTok{###}
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps }\CommentTok{###}
+\NormalTok{    x }\OperatorTok{=}\NormalTok{ a }\OperatorTok{*}\NormalTok{ x}
+\NormalTok{    t }\OperatorTok{=}\NormalTok{ t }\OperatorTok{+} \FloatTok{0.1} \CommentTok{###}
+\NormalTok{initialize()}
+\ControlFlowTok{while}\NormalTok{ t }\OperatorTok{<} \DecValTok{3}\NormalTok{.: }\CommentTok{###}
+\NormalTok{    update()}
+\NormalTok{    observe()}
+\NormalTok{plot(timesteps, result) }\CommentTok{###}
+\NormalTok{show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:/LocalData/hema/pythonLibs/"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \FloatTok{3.49}
+\NormalTok{K }\OperatorTok{=} \FloatTok{1.5}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    result }\OperatorTok{=}\NormalTok{ [x]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, result}
+\NormalTok{    result.append(x)}
+    
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, result}
+\NormalTok{    x }\OperatorTok{=}\NormalTok{ (}\OperatorTok{-}\NormalTok{((a }\OperatorTok{-} \DecValTok{1}\NormalTok{)}\OperatorTok{/}\NormalTok{K) }\OperatorTok{*}\NormalTok{ x }\OperatorTok{+}\NormalTok{ a) }\OperatorTok{*}\NormalTok{ x}
+\NormalTok{initialize()}
+\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \BuiltInTok{xrange}\NormalTok{(}\DecValTok{300}\NormalTok{):}
+\NormalTok{  update()}
+\NormalTok{  observe()}
+  
+\CommentTok{# matplotlib.pyplot.style.use("ggplot")}
+\NormalTok{plot(result)}
+\NormalTok{matplotlib.pyplot.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ sys}
+\NormalTok{sys.path.append(}\StringTok{"C:/LocalData/hema/pythonLibs/"}\NormalTok{) }\CommentTok{# this is the library you chose}
+\ImportTok{from}\NormalTok{ pylab }\ImportTok{import} \OperatorTok{*}
+\NormalTok{a }\OperatorTok{=} \FloatTok{3.49}
+\NormalTok{K }\OperatorTok{=} \FloatTok{1.5}
+\KeywordTok{def}\NormalTok{ initialize():}
+    \KeywordTok{global}\NormalTok{ x, result, t, timesteps}
+\NormalTok{    x }\OperatorTok{=} \DecValTok{1}\NormalTok{.}
+\NormalTok{    result }\OperatorTok{=}\NormalTok{ [x]}
+\KeywordTok{def}\NormalTok{ observe():}
+    \KeywordTok{global}\NormalTok{ x, result}
+\NormalTok{    result.append(x)}
+    
+\KeywordTok{def}\NormalTok{ update():}
+    \KeywordTok{global}\NormalTok{ x, result}
+\NormalTok{    x }\OperatorTok{=}\NormalTok{ x }\OperatorTok{+}\NormalTok{ r}\OperatorTok{*}\NormalTok{x }\OperatorTok{*}\NormalTok{ (}\DecValTok{1}\OperatorTok{-}\NormalTok{(x}\OperatorTok{/}\NormalTok{K))}
+\NormalTok{initialize()}
+\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \BuiltInTok{xrange}\NormalTok{(}\DecValTok{300}\NormalTok{):}
+\NormalTok{  update()}
+\NormalTok{  observe()}
+  
+\CommentTok{# matplotlib.pyplot.style.use("ggplot")}
+\NormalTok{plot(result)}
+\NormalTok{matplotlib.pyplot.show()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x1 <-}\StringTok{ }\FloatTok{0.2}
+\NormalTok{const <-}\StringTok{ }\FloatTok{2.95}
+\NormalTok{x <-}\StringTok{ }\KeywordTok{vector}\NormalTok{()}
+\NormalTok{x[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{x1}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\DecValTok{99}\NormalTok{) \{}
+\NormalTok{  x[i }\OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{const}\OperatorTok{*}\NormalTok{x[i]}\OperatorTok{*}\NormalTok{(}\DecValTok{1}\OperatorTok{-}\NormalTok{x[i])}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{dyn <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{rep =} \KeywordTok{seq}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{(i}\OperatorTok{+}\DecValTok{1}\NormalTok{)), x)}
+
+\KeywordTok{ggplot}\NormalTok{(dyn, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ rep, }\DataTypeTok{y =}\NormalTok{ x)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{()}
+
+
+\NormalTok{A <-}\StringTok{ }\DecValTok{1}
+\NormalTok{B <-}\StringTok{ }\DecValTok{1}
+\NormalTok{A[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{A}
+\NormalTok{B[}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\NormalTok{B}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\DecValTok{99}\NormalTok{) \{}
+\NormalTok{  A[i }\OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{] <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(B[i] }\OperatorTok{==}\StringTok{ }\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+\NormalTok{  B[i }\OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{] <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(A[i] }\OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+\NormalTok{, eval =}\StringTok{ }\OtherTok{FALSE}\NormalTok{\}}
+
+\NormalTok{ABdata <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{step =} \KeywordTok{seq}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{100}\NormalTok{), }\DataTypeTok{A =}\NormalTok{ A, }\DataTypeTok{B =}\NormalTok{ B)}
+
+\KeywordTok{ggplot}\NormalTok{(ABdata, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ step, }\DataTypeTok{y =}\NormalTok{ A)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(fill)}
+
+\NormalTok{ABplot <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(ABdata, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ step, }\DataTypeTok{y =}\NormalTok{ A, }\DataTypeTok{group =} \DecValTok{1}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{colour =} \StringTok{"darkred"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{1}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ ABdata, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ step, }\DataTypeTok{y =}\NormalTok{ B), }\DataTypeTok{colour =} \StringTok{"darkblue"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{1}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_classic}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{scale_y_discrete}\NormalTok{(}\DataTypeTok{name =} \StringTok{"Color"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_cartesian}\NormalTok{(}\DataTypeTok{xlim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{100}\NormalTok{), }\DataTypeTok{ylim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{2}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

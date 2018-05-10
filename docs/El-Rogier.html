@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>El Rogier</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Visualising baseline characteristics</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">About</a>
+</li>
+<li>
+  <a href="El-Rogier.html">Rogier</a>
+</li>
+<li>
+  <a href="complexity-manuscript.html">Manuscript (LATER)</a>
+</li>
+<li>
+  <a href="mechanisms-supplement.html">Analyses</a>
+</li>
+<li>
+  <a href="Latent change score models.html">Latent change score models</a>
+</li>
+<li>
+  <a href="https://raw.githubusercontent.com/heinonmatti/complexity-modeling/master/T1_plus_T3-datasetup.R">Data setup code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">El Rogier</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;T1_plus_T3-datasetup.R&quot;</span>)</code></pre></div>
+<div id="coupling-of-autonomous-motivation-and-bcts" class="section level1">
+<h1>Coupling of Autonomous motivation and BCTs</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The model in this script is originally part of the manuscript </span>
+<span class="co">#&#39;Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications&#39;</span>
+<span class="co">#Rogier A. Kievit, Andreas M. Brandmaier, Gabriel Ziegler, Anne-Laura van Harmelen, </span>
+<span class="co">#Susanne de Mooij, Michael Moutoussisa, Ian Goodyer, Ed Bullmore, Peter Jones, </span>
+<span class="co">#Peter Fonagy, NSPN Consortium, Ulman Lindenberger &amp; Raymond J. Dolan                                                         </span>
+<span class="co"># Code was originally written by Rogier A. Kievit (rogier.kievit@mrc-cbu.cam.ac.uk), 30 January 2017.</span>
+<span class="co"># It may be used, (re)shared and modified freely under a CC-BY license </span>
+
+data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
+  intervention,
+  <span class="dt">Autonomous_T1 =</span> PA_autonomous_T1,
+  <span class="dt">Autonomous_T2 =</span> PA_autonomous_T3,
+  <span class="dt">frqbct_T1 =</span> PA_frqbct_T1,
+  <span class="dt">frqbct_T2 =</span> PA_frqbct_T3,
+  <span class="dt">agrbct_T1 =</span> PA_agrbct_T1,
+  <span class="dt">agrbct_T2 =</span> PA_agrbct_T3) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">BCTs_T1 =</span> <span class="kw">mean</span>(<span class="kw">c</span>(frqbct_T1, agrbct_T1), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+                <span class="dt">BCTs_T2 =</span> <span class="kw">mean</span>(<span class="kw">c</span>(frqbct_T2, agrbct_T2), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;frq&quot;</span>), <span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;agr&quot;</span>))
+
+
+<span class="co">#Fit the Bivariate Latent Change Score model to simulated data</span>
+BLCS&lt;-<span class="st">&#39;</span>
+
+<span class="st">Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1</span>
+<span class="st">d_Autonomous1 =~ 1 * Autonomous_T2     # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2</span>
+<span class="st">d_Autonomous1 ~ 1             # This estimates the intercept of the change score </span>
+<span class="st">Autonomous_T1 ~  1           # This estimates the intercept of Autonomous_T1 </span>
+<span class="st">Autonomous_T2 ~ 0 * 1          # This constrains the intercept of Autonomous_T2 to 0</span>
+
+<span class="st">BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1</span>
+<span class="st">d_BCTs1 =~ 1 * BCTs_T2     # This defines the latent change score factor as measured perfectly by scores on BCTs_T2</span>
+<span class="st">BCTs_T2 ~ 0 * 1          # This line constrains the intercept of BCTs_T2 to 0</span>
+<span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
+
+<span class="st">d_Autonomous1 ~~  d_Autonomous1       # This estimates the variance of the change scores</span>
+<span class="st">Autonomous_T1 ~~   Autonomous_T1    # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2    # This fixes the variance of the Autonomous_T2 to 0  </span>
+
+<span class="st">d_BCTs1 ~ 1             # This estimates the intercept of the change score </span>
+<span class="st">BCTs_T1 ~ 1            # This estimates the intercept of BCTs_T1 </span>
+<span class="st">d_BCTs1 ~~ d_BCTs1        # This estimates the variance of the change scores </span>
+<span class="st">BCTs_T1 ~~ BCTs_T1      # This estimates the variance of BCTs_T1 </span>
+
+<span class="st">d_BCTs1 ~ Autonomous_T1 + BCTs_T1   # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
+<span class="st">d_Autonomous1 ~ BCTs_T1 + Autonomous_T1   # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
+
+<span class="st">Autonomous_T1 ~~ BCTs_T1     # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">d_Autonomous1 ~~ d_BCTs1          # This estimates the d_Autonomous and d_BCTs covariance</span>
+<span class="st">&#39;</span>
+
+fitBLCS &lt;-<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">lavaan</span>(BLCS, 
+                          <span class="dt">data =</span> data_BLCS, 
+                          <span class="dt">estimator =</span> <span class="st">&#39;mlr&#39;</span>, 
+                          <span class="dt">fixed.x =</span> <span class="ot">FALSE</span>,
+                          <span class="dt">group =</span> <span class="st">&quot;intervention&quot;</span>,
+                          <span class="dt">missing =</span> <span class="st">&#39;fiml&#39;</span>)
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: group variable &#39;intervention&#39; contains missing values
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: some cases are empty and will be ignored:
+##   86
+
+lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
+## lavaan (0.5-23.1097) converged normally after  63 iterations
+## 
+##   Number of observations per group         
+##   1                                                581
+##   0                                                502
+## 
+##   Number of missing patterns per group     
+##   1                                                  8
+##   0                                                  7
+## 
+##   Estimator                                         ML      Robust
+##   Minimum Function Test Statistic                0.000       0.000
+##   Degrees of freedom                                 0           0
+##   Minimum Function Value               0.0000000000000
+##   Scaling correction factor                                     NA
+##     for the Yuan-Bentler correction
+## 
+## Chi-square for each group:
+## 
+##   1                                              0.000       0.000
+##   0                                              0.000       0.000
+## 
+## Model test baseline model:
+## 
+##   Minimum Function Test Statistic             1778.504    1178.148
+##   Degrees of freedom                                12          12
+##   P-value                                        0.000       0.000
+## 
+## User model versus baseline model:
+## 
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.000       1.000
+## 
+##   Robust Comparative Fit Index (CFI)                            NA
+##   Robust Tucker-Lewis Index (TLI)                               NA
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)              -5053.904   -5053.904
+##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
+## 
+##   Number of free parameters                         28          28
+##   Akaike (AIC)                               10163.807   10163.807
+##   Bayesian (BIC)                             10303.457   10303.457
+##   Sample-size adjusted Bayesian (BIC)        10214.523   10214.523
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.000       0.000
+##   90 Percent Confidence Interval          0.000  0.000       0.000  0.000
+##   P-value RMSEA &lt;= 0.05                             NA          NA
+## 
+##   Robust RMSEA                                               0.000
+##   90 Percent Confidence Interval                             0.000  0.000
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.000       0.000
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Observed
+##   Standard Errors                   Robust.huber.white
+## 
+## 
+## Group 1 [1]:
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   d_Autonomous1 =~                                                      
+##     Autonomous_T2     1.000                               0.816    0.777
+##   d_BCTs1 =~                                                            
+##     BCTs_T2           1.000                               1.013    0.809
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T2 ~                                                       
+##     Autonomous_T1     1.000                               1.000    1.010
+##   BCTs_T2 ~                                                             
+##     BCTs_T1           1.000                               1.000    0.913
+##   d_BCTs1 ~                                                             
+##     Autonomous_T1     0.229    0.058    3.933    0.000    0.226    0.240
+##     BCTs_T1          -0.419    0.062   -6.791    0.000   -0.414   -0.473
+##   d_Autonomous1 ~                                                       
+##     BCTs_T1           0.131    0.046    2.852    0.004    0.161    0.184
+##     Autonomous_T1    -0.390    0.052   -7.516    0.000   -0.478   -0.507
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T1 ~~                                                      
+##     BCTs_T1           0.725    0.052   14.025    0.000    0.725    0.598
+##  .d_Autonomous1 ~~                                                      
+##    .d_BCTs1           0.202    0.041    4.894    0.000    0.291    0.291
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .d_Autonomous1     1.003    0.129    7.797    0.000    1.228    1.228
+##     Autonomous_T1     3.355    0.044   76.132    0.000    3.355    3.161
+##    .Autonomous_T2     0.000                               0.000    0.000
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_BCTs1           0.626    0.132    4.730    0.000    0.618    0.618
+##     BCTs_T1           2.768    0.048   58.203    0.000    2.768    2.421
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_Autonomous1     0.547    0.051   10.768    0.000    0.821    0.821
+##     Autonomous_T1     1.126    0.053   21.199    0.000    1.126    1.000
+##    .Autonomous_T2     0.000                               0.000    0.000
+##    .d_BCTs1           0.877    0.062   14.158    0.000    0.854    0.854
+##     BCTs_T1           1.308    0.073   17.859    0.000    1.308    1.000
+## 
+## R-Square:
+##                    Estimate
+##     BCTs_T2           1.000
+##     d_Autonomous1     0.179
+##     Autonomous_T2     1.000
+##     d_BCTs1           0.146
+## 
+## 
+## Group 2 [0]:
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   d_Autonomous1 =~                                                      
+##     Autonomous_T2     1.000                               0.671    0.650
+##   d_BCTs1 =~                                                            
+##     BCTs_T2           1.000                               1.032    0.875
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T2 ~                                                       
+##     Autonomous_T1     1.000                               1.000    1.006
+##   BCTs_T2 ~                                                             
+##     BCTs_T1           1.000                               1.000    0.981
+##   d_BCTs1 ~                                                             
+##     Autonomous_T1     0.255    0.061    4.177    0.000    0.247    0.257
+##     BCTs_T1          -0.523    0.059   -8.860    0.000   -0.507   -0.586
+##   d_Autonomous1 ~                                                       
+##     BCTs_T1           0.112    0.043    2.626    0.009    0.167    0.193
+##     Autonomous_T1    -0.293    0.044   -6.582    0.000   -0.437   -0.453
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T1 ~~                                                      
+##     BCTs_T1           0.758    0.054   14.090    0.000    0.758    0.631
+##  .d_Autonomous1 ~~                                                      
+##    .d_BCTs1           0.100    0.032    3.119    0.002    0.175    0.175
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .d_Autonomous1     0.729    0.103    7.067    0.000    1.086    1.086
+##     Autonomous_T1     3.475    0.046   74.929    0.000    3.475    3.347
+##    .Autonomous_T2     0.000                               0.000    0.000
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_BCTs1           0.637    0.142    4.476    0.000    0.617    0.617
+##     BCTs_T1           2.876    0.052   55.593    0.000    2.876    2.489
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_Autonomous1     0.390    0.032   12.254    0.000    0.868    0.868
+##     Autonomous_T1     1.078    0.058   18.469    0.000    1.078    1.000
+##    .Autonomous_T2     0.000                               0.000    0.000
+##    .d_BCTs1           0.830    0.064   13.046    0.000    0.781    0.781
+##     BCTs_T1           1.336    0.067   19.898    0.000    1.336    1.000
+## 
+## R-Square:
+##                    Estimate
+##     BCTs_T2           1.000
+##     d_Autonomous1     0.132
+##     Autonomous_T2     1.000
+##     d_BCTs1           0.219
+
+semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS, 
+                  <span class="dt">what =</span> <span class="st">&quot;std&quot;</span>,
+                  <span class="dt">ask =</span> <span class="ot">FALSE</span>,
+                  <span class="dt">label.cex =</span> .<span class="dv">6</span>, 
+                  <span class="dt">label.scale =</span> <span class="ot">FALSE</span>,
+                  <span class="dt">edge.label.cex =</span> <span class="fl">0.75</span>, 
+                  <span class="dt">layout =</span> <span class="st">&quot;tree2&quot;</span>,
+                  <span class="dt">intercepts =</span> <span class="ot">TRUE</span>,
+                  <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
+                               <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
+                               <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
+<p><img src="El-Rogier_files/figure-html/aut-bct-coupling-1.png" width="2100" /><img src="El-Rogier_files/figure-html/aut-bct-coupling-2.png" width="2100" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -19,11 +19,13 @@ navbar:
   left:
   - text: About
     href: index.html
-  - text: Manuscript
-    href: baseline-manuscript.html
-  - text: Descriptives
-    href: baseline-supplement.html
-  - text: Networks
-    href: baseline-networks.html
+  - text: Rogier
+    href: El-Rogier.html
+  - text: Manuscript (LATER)
+    href: complexity-manuscript.html
+  - text: Analyses
+    href: mechanisms-supplement.html
+  - text: Latent change score models
+    href: Latent change score models.html
   - text: Data setup code
-    href: https://raw.githubusercontent.com/heinonmatti/baseline-visu/master/baseline-datasetup.R
+    href: https://raw.githubusercontent.com/heinonmatti/complexity-modeling/master/T1_plus_T3-datasetup.R

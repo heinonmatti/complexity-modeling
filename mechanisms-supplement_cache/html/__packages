@@ -1,0 +1,16 @@
+base
+pacman
+papaja
+ggplot2
+ggridges
+patchwork
+knitr
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+bindrcpp

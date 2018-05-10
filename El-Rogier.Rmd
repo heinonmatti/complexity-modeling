@@ -1,0 +1,90 @@
+---
+title: "El Rogier"
+---
+
+```{r setup, verbose = FALSE, warning = FALSE, message = FALSE}
+source("T1_plus_T3-datasetup.R")
+```
+
+
+# Coupling of Autonomous motivation and BCTs
+
+```{r aut-bct-coupling}
+# The model in this script is originally part of the manuscript 
+#'Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications'
+#Rogier A. Kievit, Andreas M. Brandmaier, Gabriel Ziegler, Anne-Laura van Harmelen, 
+#Susanne de Mooij, Michael Moutoussisa, Ian Goodyer, Ed Bullmore, Peter Jones, 
+#Peter Fonagy, NSPN Consortium, Ulman Lindenberger & Raymond J. Dolan                                                         
+# Code was originally written by Rogier A. Kievit (rogier.kievit@mrc-cbu.cam.ac.uk), 30 January 2017.
+# It may be used, (re)shared and modified freely under a CC-BY license 
+
+data_BLCS <- df %>% dplyr::select(
+  intervention,
+  Autonomous_T1 = PA_autonomous_T1,
+  Autonomous_T2 = PA_autonomous_T3,
+  frqbct_T1 = PA_frqbct_T1,
+  frqbct_T2 = PA_frqbct_T3,
+  agrbct_T1 = PA_agrbct_T1,
+  agrbct_T2 = PA_agrbct_T3) %>% 
+  rowwise() %>% 
+  dplyr::mutate(BCTs_T1 = mean(c(frqbct_T1, agrbct_T1), na.rm = TRUE),
+                BCTs_T2 = mean(c(frqbct_T2, agrbct_T2), na.rm = TRUE)) %>% 
+  dplyr::select(-contains("frq"), -contains("agr"))
+
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS<-'
+
+Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1
+d_Autonomous1 =~ 1 * Autonomous_T2     # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2
+d_Autonomous1 ~ 1             # This estimates the intercept of the change score 
+Autonomous_T1 ~  1           # This estimates the intercept of Autonomous_T1 
+Autonomous_T2 ~ 0 * 1          # This constrains the intercept of Autonomous_T2 to 0
+
+BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1
+d_BCTs1 =~ 1 * BCTs_T2     # This defines the latent change score factor as measured perfectly by scores on BCTs_T2
+BCTs_T2 ~ 0 * 1          # This line constrains the intercept of BCTs_T2 to 0
+BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  
+
+d_Autonomous1 ~~  d_Autonomous1       # This estimates the variance of the change scores
+Autonomous_T1 ~~   Autonomous_T1    # This estimates the variance of the Autonomous_T1 
+Autonomous_T2 ~~ 0 * Autonomous_T2    # This fixes the variance of the Autonomous_T2 to 0  
+
+d_BCTs1 ~ 1             # This estimates the intercept of the change score 
+BCTs_T1 ~ 1            # This estimates the intercept of BCTs_T1 
+d_BCTs1 ~~ d_BCTs1        # This estimates the variance of the change scores 
+BCTs_T1 ~~ BCTs_T1      # This estimates the variance of BCTs_T1 
+
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1   # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1   # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+
+Autonomous_T1 ~~ BCTs_T1     # This estimates the Autonomous_T1 BCTs_T1 covariance
+d_Autonomous1 ~~ d_BCTs1          # This estimates the d_Autonomous and d_BCTs covariance
+'
+
+fitBLCS <- lavaan::lavaan(BLCS, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "intervention",
+                          missing = 'fiml')
+
+lavaan::summary(fitBLCS, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+semPlot::semPaths(fitBLCS, 
+                  what = "std",
+                  ask = FALSE,
+                  label.cex = .6, 
+                  label.scale = FALSE,
+                  edge.label.cex = 0.75, 
+                  layout = "tree2",
+                  intercepts = TRUE,
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+
+
+```
+
+
