@@ -15,7 +15,7 @@ output:
     lib_dir: site_libs
     self_contained: no
 navbar:
-  title: Visualising baseline characteristics
+  title: Investigating complexity and mechanisms of the LMI intervention
   left:
   - text: About
     href: index.html

@@ -311,7 +311,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Visualising baseline characteristics</a>
+      <a class="navbar-brand" href="index.html">Investigating complexity and mechanisms of the LMI intervention</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -365,6 +365,8 @@ div.tocify {
 <p>Autonomous motivation means doing things because they are pleasurable, meaningful or fitting with one’s identity.</p>
 <p>BCTs are different techniques which help in actualising PA, as in setting goals, considering how PA fits with one’s values, etc.</p>
 <p>The variables in this code chunk are mean scores of 9 (autonomous motivation) and 19 (BCTs) items.</p>
+<div id="basic-model" class="section level2">
+<h2>Basic model</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The model in this script is originally part of the manuscript </span>
 <span class="co">#&#39;Developmental cognitive neuroscience using Latent Change Score models: A tutorial and applications&#39;</span>
 <span class="co">#Rogier A. Kievit, Andreas M. Brandmaier, Gabriel Ziegler, Anne-Laura van Harmelen, </span>
@@ -614,9 +616,21 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS,
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/aut-bct-coupling-1.png" width="2100" /><img src="El-Rogier_files/figure-html/aut-bct-coupling-2.png" width="2100" /></p>
+</div>
+<div id="constrained-model" class="section level2">
+<h2>Constrained model</h2>
 <p>Next, we constrain parameters, which ought to be the same across groups, as identical:</p>
-<p><em>the intercept of Autonomous_T1 </em>the variance of the Autonomous_T1 <em>the intercept of BCTs_T1 </em>the variance of BCTs_T1</p>
-<p>Constraining the covariance between Autonomous_T1 and BCTs_T1 leads to <code>Error in chol.default(S) : the leading minor of order 4 is not positive definite</code>.</p>
+<ul>
+<li>the intercept of Autonomous_T1<br />
+</li>
+<li>the variance of the Autonomous_T1<br />
+</li>
+<li>the intercept of BCTs_T1<br />
+</li>
+<li>the variance of BCTs_T1<br />
+</li>
+<li>the covariance between Autonomous_T1 and BCTs_T1</li>
+</ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
   <span class="dt">Autonomous_T1 =</span> PA_autonomous_T1,
@@ -646,18 +660,18 @@ BLCS_constrained &lt;-<span class="st"> &#39;</span>
 <span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
 
 <span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
-<span class="st">Autonomous_T1 ~~ c(autint, autint) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
 <span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
 
 <span class="st">d_BCTs1 ~ 1                            # This estimates the intercept of the change score </span>
-<span class="st">BCTs_T1 ~ c(autint, autint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
 <span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
-<span class="st">BCTs_T1 ~~ c(autint, autint) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
 
 <span class="st">d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
 <span class="st">d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
 
-<span class="st">Autonomous_T1 ~~ BCTs_T1                    # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                    # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
 <span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
 <span class="st">&#39;</span>
 
@@ -672,7 +686,7 @@ fitBLCS_constrained &lt;-<span class="st"> </span>lavaan<span class="op">::</spa
 ##   86
 
 lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrained, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
-## lavaan (0.5-23.1097) converged normally after  52 iterations
+## lavaan (0.5-23.1097) converged normally after  56 iterations
 ## 
 ##   Number of observations per group         
 ##   1                                                581
@@ -683,16 +697,16 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ##   0                                                  7
 ## 
 ##   Estimator                                         ML      Robust
-##   Minimum Function Test Statistic              747.332     763.567
-##   Degrees of freedom                                 7           7
-##   P-value (Chi-square)                           0.000       0.000
-##   Scaling correction factor                                  0.979
+##   Minimum Function Test Statistic                5.540       5.945
+##   Degrees of freedom                                 5           5
+##   P-value (Chi-square)                           0.354       0.312
+##   Scaling correction factor                                  0.932
 ##     for the Yuan-Bentler correction
 ## 
 ## Chi-square for each group:
 ## 
-##   1                                            382.096     390.397
-##   0                                            365.236     373.170
+##   1                                              2.524       2.709
+##   0                                              3.016       3.236
 ## 
 ## Model test baseline model:
 ## 
@@ -702,38 +716,38 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## 
 ## User model versus baseline model:
 ## 
-##   Comparative Fit Index (CFI)                    0.581       0.351
-##   Tucker-Lewis Index (TLI)                       0.282      -0.112
+##   Comparative Fit Index (CFI)                    1.000       0.999
+##   Tucker-Lewis Index (TLI)                       0.999       0.998
 ## 
-##   Robust Comparative Fit Index (CFI)                         0.579
-##   Robust Tucker-Lewis Index (TLI)                            0.279
+##   Robust Comparative Fit Index (CFI)                         0.999
+##   Robust Tucker-Lewis Index (TLI)                            0.999
 ## 
 ## Loglikelihood and Information Criteria:
 ## 
-##   Loglikelihood user model (H0)              -5427.570   -5427.570
-##   Scaling correction factor                                  0.901
+##   Loglikelihood user model (H0)              -5056.674   -5056.674
+##   Scaling correction factor                                  0.979
 ##     for the MLR correction
 ##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
 ##   Scaling correction factor                                  1.145
 ##     for the MLR correction
 ## 
-##   Number of free parameters                         21          21
-##   Akaike (AIC)                               10897.139   10897.139
-##   Bayesian (BIC)                             11001.877   11001.877
-##   Sample-size adjusted Bayesian (BIC)        10935.176   10935.176
+##   Number of free parameters                         23          23
+##   Akaike (AIC)                               10159.348   10159.348
+##   Bayesian (BIC)                             10274.060   10274.060
+##   Sample-size adjusted Bayesian (BIC)        10201.007   10201.007
 ## 
 ## Root Mean Square Error of Approximation:
 ## 
-##   RMSEA                                          0.442       0.447
-##   90 Percent Confidence Interval          0.415  0.469       0.420  0.474
-##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+##   RMSEA                                          0.014       0.019
+##   90 Percent Confidence Interval          0.000  0.063       0.000  0.066
+##   P-value RMSEA &lt;= 0.05                          0.859       0.824
 ## 
-##   Robust RMSEA                                               0.442
-##   90 Percent Confidence Interval                             0.416  0.469
+##   Robust RMSEA                                               0.018
+##   90 Percent Confidence Interval                             0.000  0.063
 ## 
 ## Standardized Root Mean Square Residual:
 ## 
-##   SRMR                                           0.884       0.884
+##   SRMR                                           0.027       0.027
 ## 
 ## Parameter Estimates:
 ## 
@@ -746,54 +760,54 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               0.901    0.639
+##     Autonomous_T2     1.000                               0.814    0.775
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.058    0.664
+##     BCTs_T2           1.000                               1.012    0.806
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.194
+##     Autonomous_T1     1.000                               1.000    1.003
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.056
+##     BCTs_T1           1.000                               1.000    0.916
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1     0.229    0.058    3.942    0.000    0.217    0.364
-##     BCTs_T1          -0.420    0.061   -6.824    0.000   -0.397   -0.667
+##     Autonomous_T1     0.229    0.058    3.933    0.000    0.227    0.238
+##     BCTs_T1          -0.419    0.062   -6.791    0.000   -0.414   -0.477
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.134    0.046    2.927    0.003    0.149    0.251
-##     Autonomous_T1    -0.392    0.052   -7.585    0.000   -0.436   -0.733
+##     BCTs_T1           0.131    0.046    2.851    0.004    0.162    0.186
+##     Autonomous_T1    -0.390    0.052   -7.516    0.000   -0.479   -0.504
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           2.102    0.057   37.045    0.000    2.102    0.743
+##     BCTs_T1 (atb_)    0.743    0.037   20.055    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.201    0.041    4.867    0.000    0.290    0.290
+##    .d_BCTs1           0.202    0.041    4.894    0.000    0.291    0.291
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           1.003    0.129    7.791    0.000    1.113    1.113
-##     Atnm_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.682
+##    .d_Atnm1           1.003    0.129    7.796    0.000    1.232    1.232
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.626    0.133    4.720    0.000    0.592    0.592
-##     BCTs_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.682
+##    .d_BCTs1           0.626    0.132    4.729    0.000    0.619    0.619
+##     BCTs_T1 (bctn)    2.818    0.035   80.403    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.546    0.051   10.756    0.000    0.673    0.673
-##     Atnm_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.000
+##    .d_Atnm1           0.547    0.051   10.768    0.000    0.826    0.826
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.876    0.062   14.141    0.000    0.783    0.783
-##     BCTs_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.000
+##    .d_BCTs1           0.877    0.062   14.156    0.000    0.855    0.855
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.327
+##     d_Autonomous1     0.174
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.217
+##     d_BCTs1           0.145
 ## 
 ## 
 ## Group 2 [0]:
@@ -801,59 +815,59 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               0.727    0.493
+##     Autonomous_T2     1.000                               0.673    0.648
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.104    0.748
+##     BCTs_T2           1.000                               1.033    0.877
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.140
+##     Autonomous_T1     1.000                               1.000    1.014
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.140
+##     BCTs_T1           1.000                               1.000    0.978
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1     0.255    0.061    4.193    0.000    0.231    0.389
-##     BCTs_T1          -0.524    0.059   -8.902    0.000   -0.475   -0.799
+##     Autonomous_T1     0.255    0.061    4.181    0.000    0.247    0.260
+##     BCTs_T1          -0.523    0.059   -8.863    0.000   -0.507   -0.583
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.111    0.043    2.608    0.009    0.153    0.257
-##     Autonomous_T1    -0.293    0.045   -6.579    0.000   -0.403   -0.678
+##     BCTs_T1           0.112    0.043    2.624    0.009    0.166    0.191
+##     Autonomous_T1    -0.293    0.044   -6.581    0.000   -0.435   -0.458
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           2.149    0.055   38.982    0.000    2.149    0.759
+##     BCTs_T1 (atb_)    0.743    0.037   20.055    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.101    0.032    3.139    0.002    0.177    0.177
+##    .d_BCTs1           0.100    0.032    3.120    0.002    0.175    0.175
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           0.732    0.103    7.072    0.000    1.006    1.006
-##     Atnm_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.682
+##    .d_Atnm1           0.729    0.103    7.065    0.000    1.082    1.082
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.637    0.143    4.464    0.000    0.577    0.577
-##     BCTs_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.682
+##    .d_BCTs1           0.636    0.142    4.473    0.000    0.616    0.616
+##     BCTs_T1 (bctn)    2.818    0.035   80.403    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.391    0.032   12.247    0.000    0.739    0.739
-##     Atnm_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.000
+##    .d_Atnm1           0.390    0.032   12.252    0.000    0.861    0.861
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.831    0.064   13.022    0.000    0.682    0.682
-##     BCTs_T1 (atnt)    2.830    0.028   99.982    0.000    2.830    1.000
+##    .d_BCTs1           0.830    0.064   13.045    0.000    0.779    0.779
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.261
+##     d_Autonomous1     0.139
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.318
+##     d_BCTs1           0.221
 
 lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained)</code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.944884","6":"5","7":"0.311619","_rn_":"fitBLCS_constrained"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
   </script>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
@@ -869,7 +883,10 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-1-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-1-2.png" width="2100" /></p>
-<p>Now, we constrain the parameters which ought to differ across intervention and control groups, to see if model fit changes.</p>
+<p>Next, we constrain the parameters which ought to differ across intervention and control groups, to see if model fit changes.</p>
+</div>
+<div id="mean-autonomous-change-forced-as-equal" class="section level2">
+<h2>Mean Autonomous change forced as equal</h2>
 <p>First, constrain the intercept of the change score in Autonomous.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
@@ -890,7 +907,7 @@ BLCS_constrained_equalChanges_autonomous &lt;-<span class="st"> &#39;</span>
 
 <span class="st">Autonomous_T2 ~ 1 * Autonomous_T1       # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1</span>
 <span class="st">d_Autonomous1 =~ 1 * Autonomous_T2      # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2</span>
-<span class="st">d_Autonomous1 ~ c(autint, autint) * 1                     # This estimates the intercept of the change score </span>
+<span class="st">d_Autonomous1 ~ c(d_autint, d_autint) * 1                     # This estimates the intercept of the change score </span>
 <span class="st">Autonomous_T1 ~  c(autint, autint) * 1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups </span>
 <span class="st">Autonomous_T2 ~ 0 * 1                   # This constrains the intercept of Autonomous_T2 to 0</span>
 
@@ -900,18 +917,18 @@ BLCS_constrained_equalChanges_autonomous &lt;-<span class="st"> &#39;</span>
 <span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
 
 <span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
-<span class="st">Autonomous_T1 ~~ c(autint, autint) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
 <span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
 
 <span class="st">d_BCTs1 ~ 1                            # This estimates the intercept of the change score </span>
-<span class="st">BCTs_T1 ~ c(autint, autint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
 <span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
-<span class="st">BCTs_T1 ~~ c(autint, autint) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
 
 <span class="st">d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
 <span class="st">d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
 
-<span class="st">Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
 <span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
 <span class="st">&#39;</span>
 
@@ -926,7 +943,7 @@ fitBLCS_constrained_equalChanges_autonomous &lt;-<span class="st"> </span>lavaan
 ##   86
 
 lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrained_equalChanges_autonomous, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
-## lavaan (0.5-23.1097) converged normally after  52 iterations
+## lavaan (0.5-23.1097) converged normally after  65 iterations
 ## 
 ##   Number of observations per group         
 ##   1                                                581
@@ -937,16 +954,16 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ##   0                                                  7
 ## 
 ##   Estimator                                         ML      Robust
-##   Minimum Function Test Statistic             1152.864     938.436
-##   Degrees of freedom                                 9           9
-##   P-value (Chi-square)                           0.000       0.000
-##   Scaling correction factor                                  1.228
+##   Minimum Function Test Statistic                8.466       8.933
+##   Degrees of freedom                                 6           6
+##   P-value (Chi-square)                           0.206       0.177
+##   Scaling correction factor                                  0.948
 ##     for the Yuan-Bentler correction
 ## 
 ## Chi-square for each group:
 ## 
-##   1                                            543.189     442.158
-##   0                                            609.676     496.278
+##   1                                              4.125       4.352
+##   0                                              4.341       4.581
 ## 
 ## Model test baseline model:
 ## 
@@ -956,38 +973,38 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## 
 ## User model versus baseline model:
 ## 
-##   Comparative Fit Index (CFI)                    0.352       0.203
-##   Tucker-Lewis Index (TLI)                       0.137      -0.063
+##   Comparative Fit Index (CFI)                    0.999       0.997
+##   Tucker-Lewis Index (TLI)                       0.997       0.995
 ## 
-##   Robust Comparative Fit Index (CFI)                         0.351
-##   Robust Tucker-Lewis Index (TLI)                            0.135
+##   Robust Comparative Fit Index (CFI)                         0.998
+##   Robust Tucker-Lewis Index (TLI)                            0.997
 ## 
 ## Loglikelihood and Information Criteria:
 ## 
-##   Loglikelihood user model (H0)              -5630.336   -5630.336
-##   Scaling correction factor                                  0.750
+##   Loglikelihood user model (H0)              -5058.137   -5058.137
+##   Scaling correction factor                                  0.942
 ##     for the MLR correction
 ##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
 ##   Scaling correction factor                                  1.145
 ##     for the MLR correction
 ## 
-##   Number of free parameters                         19          19
-##   Akaike (AIC)                               11298.672   11298.672
-##   Bayesian (BIC)                             11393.434   11393.434
-##   Sample-size adjusted Bayesian (BIC)        11333.086   11333.086
+##   Number of free parameters                         22          22
+##   Akaike (AIC)                               10160.273   10160.273
+##   Bayesian (BIC)                             10269.998   10269.998
+##   Sample-size adjusted Bayesian (BIC)        10200.121   10200.121
 ## 
 ## Root Mean Square Error of Approximation:
 ## 
-##   RMSEA                                          0.484       0.437
-##   90 Percent Confidence Interval          0.461  0.508       0.416  0.458
-##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+##   RMSEA                                          0.028       0.030
+##   90 Percent Confidence Interval          0.000  0.067       0.000  0.069
+##   P-value RMSEA &lt;= 0.05                          0.795       0.759
 ## 
-##   Robust RMSEA                                               0.484
-##   90 Percent Confidence Interval                             0.458  0.510
+##   Robust RMSEA                                               0.029
+##   90 Percent Confidence Interval                             0.000  0.066
 ## 
 ## Standardized Root Mean Square Residual:
 ## 
-##   SRMR                                           0.581       0.581
+##   SRMR                                           0.032       0.032
 ## 
 ## Parameter Estimates:
 ## 
@@ -1000,54 +1017,54 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               1.422    1.439
+##     Autonomous_T2     1.000                               0.801    0.741
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.131    0.818
+##     BCTs_T2           1.000                               1.011    0.799
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.617
+##     Autonomous_T1     1.000                               1.000    0.974
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.157
+##     BCTs_T1           1.000                               1.000    0.909
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1     0.105    0.062    1.684    0.092    0.093    0.148
-##     BCTs_T1          -0.452    0.063   -7.204    0.000   -0.399   -0.639
+##     Autonomous_T1     0.241    0.058    4.179    0.000    0.239    0.251
+##     BCTs_T1          -0.416    0.062   -6.744    0.000   -0.412   -0.474
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.045    0.049    0.925    0.355    0.032    0.050
-##     Autonomous_T1    -0.737    0.041  -17.819    0.000   -0.518   -0.828
+##     BCTs_T1           0.140    0.047    2.996    0.003    0.175    0.201
+##     Autonomous_T1    -0.357    0.045   -7.954    0.000   -0.445   -0.469
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.839    0.052   35.081    0.000    1.839    0.720
+##     BCTs_T1 (atb_)    0.743    0.037   20.053    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.277    0.055    5.014    0.000    0.337    0.337
+##    .d_BCTs1           0.202    0.041    4.878    0.000    0.291    0.291
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1 (atnt)    2.555    0.029   87.412    0.000    1.797    1.797
-##     Atnm_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.599
+##    .d_Atnm1 (d_tn)    0.853    0.082   10.429    0.000    1.065    1.065
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.188    0.177    6.695    0.000    1.050    1.050
-##     BCTs_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.599
+##    .d_BCTs1           0.572    0.126    4.535    0.000    0.566    0.566
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.752    0.054   13.981    0.000    0.372    0.372
-##     Atnm_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.000
+##    .d_Atnm1           0.549    0.052   10.640    0.000    0.856    0.856
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.904    0.065   13.820    0.000    0.706    0.706
-##     BCTs_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.000
+##    .d_BCTs1           0.877    0.062   14.147    0.000    0.858    0.858
+##     BCTs_T1 (bctv)    1.324    0.050   26.594    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.628
+##     d_Autonomous1     0.144
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.294
+##     d_BCTs1           0.142
 ## 
 ## 
 ## Group 2 [0]:
@@ -1055,59 +1072,59 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               1.369    1.429
+##     Autonomous_T2     1.000                               0.686    0.677
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.163    0.893
+##     BCTs_T2           1.000                               1.034    0.882
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.668
+##     Autonomous_T1     1.000                               1.000    1.040
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.228
+##     BCTs_T1           1.000                               1.000    0.982
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1     0.151    0.070    2.169    0.030    0.130    0.208
-##     BCTs_T1          -0.545    0.060   -9.138    0.000   -0.468   -0.749
+##     Autonomous_T1     0.248    0.061    4.070    0.000    0.240    0.252
+##     BCTs_T1          -0.524    0.059   -8.883    0.000   -0.507   -0.583
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.026    0.047    0.551    0.581    0.019    0.030
-##     Autonomous_T1    -0.706    0.042  -16.998    0.000   -0.516   -0.824
+##     BCTs_T1           0.106    0.042    2.499    0.012    0.154    0.178
+##     Autonomous_T1    -0.321    0.042   -7.612    0.000   -0.468   -0.493
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.888    0.050   37.433    0.000    1.888    0.739
+##     BCTs_T1 (atb_)    0.743    0.037   20.053    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.171    0.054    3.148    0.002    0.227    0.227
+##    .d_BCTs1           0.100    0.032    3.120    0.002    0.176    0.176
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1 (atnt)    2.555    0.029   87.412    0.000    1.866    1.866
-##     Atnm_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.599
+##    .d_Atnm1 (d_tn)    0.853    0.082   10.429    0.000    1.244    1.244
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.096    0.208    5.267    0.000    0.943    0.943
-##     BCTs_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.599
+##    .d_BCTs1           0.668    0.142    4.700    0.000    0.646    0.646
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.668    0.045   14.952    0.000    0.356    0.356
-##     Atnm_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.000
+##    .d_Atnm1           0.392    0.032   12.329    0.000    0.833    0.833
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.847    0.066   12.889    0.000    0.626    0.626
-##     BCTs_T1 (atnt)    2.555    0.029   87.412    0.000    2.555    1.000
+##    .d_BCTs1           0.830    0.064   13.045    0.000    0.777    0.777
+##     BCTs_T1 (bctv)    1.324    0.050   26.594    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.644
+##     d_Autonomous1     0.167
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.374
+##     d_BCTs1           0.223
 
 lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_autonomous)</code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"11298.67","3":"11393.43","4":"1.152864e+03","5":"192.8677","6":"2","7":"1.316145e-42","_rn_":"fitBLCS_constrained_equalChanges_autonomous"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.944884","6":"5","7":"0.31161899","_rn_":"fitBLCS_constrained"},{"1":"6","2":"10160.27","3":"10270.00","4":"8.465797e+00","5":"2.849993","6":"1","7":"0.09137435","_rn_":"fitBLCS_constrained_equalChanges_autonomous"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
   </script>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
@@ -1123,7 +1140,11 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-2-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-2-2.png" width="2100" /></p>
-<p>We can see that model fit and out-of-sample prediction gets worse. Same happens when we constrain the change in BCTs, instead:</p>
+<p>We can see that model fit and out-of-sample prediction gets worse.</p>
+</div>
+<div id="mean-bct-change-forced-as-equal" class="section level2">
+<h2>Mean BCT change forced as equal</h2>
+<p>Here we constrain the change in BCTs to be equal across groups:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
   <span class="dt">Autonomous_T1 =</span> PA_autonomous_T1,
@@ -1153,18 +1174,18 @@ BLCS_constrained_equalChanges_bcts &lt;-<span class="st"> &#39;</span>
 <span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
 
 <span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
-<span class="st">Autonomous_T1 ~~ c(autint, autint) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
 <span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
 
-<span class="st">d_BCTs1 ~ c(autint, autint) * 1                            # This estimates the intercept of the change score </span>
-<span class="st">BCTs_T1 ~ c(autint, autint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">d_BCTs1 ~ c(d_bctint, d_bctint) * 1                            # This estimates the intercept of the change score </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
 <span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
-<span class="st">BCTs_T1 ~~ c(autint, autint) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
 
 <span class="st">d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
 <span class="st">d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
 
-<span class="st">Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
 <span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
 <span class="st">&#39;</span>
 
@@ -1179,7 +1200,7 @@ fitBLCS_constrained_equalChanges_bcts &lt;-<span class="st"> </span>lavaan<span 
 ##   86
 
 lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrained_equalChanges_bcts, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
-## lavaan (0.5-23.1097) converged normally after  51 iterations
+## lavaan (0.5-23.1097) converged normally after  52 iterations
 ## 
 ##   Number of observations per group         
 ##   1                                                581
@@ -1190,16 +1211,16 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ##   0                                                  7
 ## 
 ##   Estimator                                         ML      Robust
-##   Minimum Function Test Statistic             1058.537     980.151
-##   Degrees of freedom                                 9           9
-##   P-value (Chi-square)                           0.000       0.000
-##   Scaling correction factor                                  1.080
+##   Minimum Function Test Statistic                5.542       6.082
+##   Degrees of freedom                                 6           6
+##   P-value (Chi-square)                           0.476       0.414
+##   Scaling correction factor                                  0.911
 ##     for the Yuan-Bentler correction
 ## 
 ## Chi-square for each group:
 ## 
-##   1                                            540.318     500.307
-##   0                                            518.219     479.844
+##   1                                              2.525       2.771
+##   0                                              3.017       3.311
 ## 
 ## Model test baseline model:
 ## 
@@ -1209,38 +1230,38 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## 
 ## User model versus baseline model:
 ## 
-##   Comparative Fit Index (CFI)                    0.406       0.167
-##   Tucker-Lewis Index (TLI)                       0.208      -0.110
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.001       1.000
 ## 
-##   Robust Comparative Fit Index (CFI)                         0.404
-##   Robust Tucker-Lewis Index (TLI)                            0.206
+##   Robust Comparative Fit Index (CFI)                         1.000
+##   Robust Tucker-Lewis Index (TLI)                            1.000
 ## 
 ## Loglikelihood and Information Criteria:
 ## 
-##   Loglikelihood user model (H0)              -5583.172   -5583.172
-##   Scaling correction factor                                  0.798
+##   Loglikelihood user model (H0)              -5056.675   -5056.675
+##   Scaling correction factor                                  0.950
 ##     for the MLR correction
 ##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
 ##   Scaling correction factor                                  1.145
 ##     for the MLR correction
 ## 
-##   Number of free parameters                         19          19
-##   Akaike (AIC)                               11204.344   11204.344
-##   Bayesian (BIC)                             11299.107   11299.107
-##   Sample-size adjusted Bayesian (BIC)        11238.759   11238.759
+##   Number of free parameters                         22          22
+##   Akaike (AIC)                               10157.350   10157.350
+##   Bayesian (BIC)                             10267.074   10267.074
+##   Sample-size adjusted Bayesian (BIC)        10197.198   10197.198
 ## 
 ## Root Mean Square Error of Approximation:
 ## 
-##   RMSEA                                          0.464       0.446
-##   90 Percent Confidence Interval          0.441  0.488       0.424  0.469
-##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+##   RMSEA                                          0.000       0.005
+##   90 Percent Confidence Interval          0.000  0.053       0.000  0.058
+##   P-value RMSEA &lt;= 0.05                          0.931       0.898
 ## 
-##   Robust RMSEA                                               0.464
-##   90 Percent Confidence Interval                             0.440  0.489
+##   Robust RMSEA                                               0.005
+##   90 Percent Confidence Interval                             0.000  0.054
 ## 
 ## Standardized Root Mean Square Residual:
 ## 
-##   SRMR                                           0.662       0.662
+##   SRMR                                           0.027       0.027
 ## 
 ## Parameter Estimates:
 ## 
@@ -1253,54 +1274,54 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               1.017    0.838
+##     Autonomous_T2     1.000                               0.814    0.776
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.590    1.284
+##     BCTs_T2           1.000                               1.012    0.806
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.335
+##     Autonomous_T1     1.000                               1.000    1.003
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.309
+##     BCTs_T1           1.000                               1.000    0.916
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1    -0.216    0.053   -4.102    0.000   -0.136   -0.221
-##     BCTs_T1          -0.532    0.065   -8.212    0.000   -0.335   -0.543
+##     Autonomous_T1     0.228    0.055    4.178    0.000    0.226    0.237
+##     BCTs_T1          -0.420    0.061   -6.827    0.000   -0.415   -0.477
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.106    0.048    2.233    0.026    0.104    0.169
-##     Autonomous_T1    -0.493    0.051   -9.700    0.000   -0.485   -0.786
+##     BCTs_T1           0.131    0.046    2.849    0.004    0.161    0.186
+##     Autonomous_T1    -0.390    0.051   -7.594    0.000   -0.480   -0.505
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.905    0.054   35.488    0.000    1.905    0.726
+##     BCTs_T1 (atb_)    0.743    0.037   20.056    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.283    0.055    5.126    0.000    0.341    0.341
+##    .d_BCTs1           0.202    0.041    4.896    0.000    0.291    0.291
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           1.463    0.154    9.496    0.000    1.439    1.439
-##     Atnm_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.620
+##    .d_Atnm1           1.004    0.125    8.025    0.000    1.233    1.233
+##     Atnm_T1 (atnt)    3.411    0.032  106.562    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1 (atnt)    2.626    0.029   89.692    0.000    1.651    1.651
-##     BCTs_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.620
+##    .d_BCTs1 (d_bc)    0.631    0.097    6.508    0.000    0.623    0.623
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.565    0.052   10.797    0.000    0.546    0.546
-##     Atnm_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.000
+##    .d_Atnm1           0.547    0.051   10.768    0.000    0.826    0.826
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.222    0.070   17.511    0.000    0.483    0.483
-##     BCTs_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.000
+##    .d_BCTs1           0.877    0.062   14.166    0.000    0.855    0.855
+##     BCTs_T1 (bctv)    1.324    0.050   26.596    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.454
+##     d_Autonomous1     0.174
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.517
+##     d_BCTs1           0.145
 ## 
 ## 
 ## Group 2 [0]:
@@ -1308,59 +1329,59 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               0.778    0.583
+##     Autonomous_T2     1.000                               0.673    0.648
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.650    1.418
+##     BCTs_T2           1.000                               1.032    0.877
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Autonomous_T1     1.000                               1.000    1.213
+##     Autonomous_T1     1.000                               1.000    1.013
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    1.393
+##     BCTs_T1           1.000                               1.000    0.977
 ##   d_BCTs1 ~                                                             
-##     Autonomous_T1    -0.199    0.053   -3.779    0.000   -0.121   -0.196
-##     BCTs_T1          -0.612    0.064   -9.538    0.000   -0.371   -0.601
+##     Autonomous_T1     0.256    0.055    4.681    0.000    0.248    0.261
+##     BCTs_T1          -0.523    0.059   -8.849    0.000   -0.506   -0.583
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1           0.101    0.042    2.408    0.016    0.130    0.211
-##     Autonomous_T1    -0.351    0.049   -7.213    0.000   -0.450   -0.730
+##     BCTs_T1           0.112    0.043    2.623    0.009    0.166    0.191
+##     Autonomous_T1    -0.293    0.044   -6.614    0.000   -0.435   -0.457
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.954    0.052   37.307    0.000    1.954    0.744
+##     BCTs_T1 (atb_)    0.743    0.037   20.056    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.143    0.044    3.221    0.001    0.211    0.211
+##    .d_BCTs1           0.100    0.032    3.121    0.002    0.175    0.175
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           0.979    0.125    7.811    0.000    1.258    1.258
-##     Atnm_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.620
+##    .d_Atnm1           0.728    0.102    7.140    0.000    1.082    1.082
+##     Atnm_T1 (atnt)    3.411    0.032  106.562    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1 (atnt)    2.626    0.029   89.692    0.000    1.591    1.591
-##     BCTs_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.620
+##    .d_BCTs1 (d_bc)    0.631    0.097    6.508    0.000    0.611    0.611
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.395    0.032   12.200    0.000    0.652    0.652
-##     Atnm_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.000
+##    .d_Atnm1           0.390    0.032   12.252    0.000    0.861    0.861
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.157    0.078   14.806    0.000    0.425    0.425
-##     BCTs_T1 (atnt)    2.626    0.029   89.692    0.000    2.626    1.000
+##    .d_BCTs1           0.830    0.064   13.045    0.000    0.779    0.779
+##     BCTs_T1 (bctv)    1.324    0.050   26.596    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.348
+##     d_Autonomous1     0.139
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.575
+##     d_BCTs1           0.221
 
 lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_equalChanges_bcts)</code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"11204.34","3":"11299.11","4":"1.058537e+03","5":"216.9740","6":"2","7":"7.668382e-48","_rn_":"fitBLCS_constrained_equalChanges_bcts"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.944883585","6":"5","7":"0.3116190","_rn_":"fitBLCS_constrained"},{"1":"6","2":"10157.35","3":"10267.07","4":"5.542245e+00","5":"0.002546158","6":"1","7":"0.9597563","_rn_":"fitBLCS_constrained_equalChanges_bcts"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
   </script>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
@@ -1376,6 +1397,9 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-3-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-3-2.png" width="2100" /></p>
+</div>
+<div id="bct---autonomous-forced-as-equal" class="section level2">
+<h2>BCT -&gt; Autonomous forced as equal</h2>
 <p>What if the intervention changed the coupling effect?</p>
 <p>Here we constrain the coupling from BCTs to autonomous motivation:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
@@ -1407,18 +1431,18 @@ BLCS_constrained_eqCoupling_bctToAut &lt;-<span class="st"> &#39;</span>
 <span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
 
 <span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
-<span class="st">Autonomous_T1 ~~ c(autint, autint) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
 <span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
 
 <span class="st">d_BCTs1 ~ 1                            # This estimates the intercept of the change score </span>
-<span class="st">BCTs_T1 ~ c(autint, autint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
 <span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
-<span class="st">BCTs_T1 ~~ c(autint, autint) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
 
 <span class="st">d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
-<span class="st">d_Autonomous1 ~ c(autint, autint) * BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
+<span class="st">d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
 
-<span class="st">Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
 <span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
 <span class="st">&#39;</span>
 
@@ -1433,7 +1457,7 @@ fitBLCS_constrained_eqCoupling_bctToAut &lt;-<span class="st"> </span>lavaan<spa
 ##   86
 
 lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrained_eqCoupling_bctToAut, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
-## lavaan (0.5-23.1097) converged normally after  84 iterations
+## lavaan (0.5-23.1097) converged normally after  56 iterations
 ## 
 ##   Number of observations per group         
 ##   1                                                581
@@ -1444,16 +1468,16 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ##   0                                                  7
 ## 
 ##   Estimator                                         ML      Robust
-##   Minimum Function Test Statistic             2859.072    2369.652
-##   Degrees of freedom                                 9           9
-##   P-value (Chi-square)                           0.000       0.000
-##   Scaling correction factor                                  1.207
+##   Minimum Function Test Statistic                5.686       5.567
+##   Degrees of freedom                                 6           6
+##   P-value (Chi-square)                           0.459       0.473
+##   Scaling correction factor                                  1.021
 ##     for the Yuan-Bentler correction
 ## 
 ## Chi-square for each group:
 ## 
-##   1                                           1435.160    1189.487
-##   0                                           1423.912    1180.165
+##   1                                              2.603       2.549
+##   0                                              3.083       3.018
 ## 
 ## Model test baseline model:
 ## 
@@ -1463,38 +1487,38 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## 
 ## User model versus baseline model:
 ## 
-##   Comparative Fit Index (CFI)                    0.000       0.000
-##   Tucker-Lewis Index (TLI)                      -1.151      -1.699
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.000       1.001
 ## 
-##   Robust Comparative Fit Index (CFI)                         0.000
-##   Robust Tucker-Lewis Index (TLI)                           -1.157
+##   Robust Comparative Fit Index (CFI)                         1.000
+##   Robust Tucker-Lewis Index (TLI)                            1.001
 ## 
 ## Loglikelihood and Information Criteria:
 ## 
-##   Loglikelihood user model (H0)              -6483.440   -6483.440
-##   Scaling correction factor                                  0.757
+##   Loglikelihood user model (H0)              -5056.747   -5056.747
+##   Scaling correction factor                                  0.926
 ##     for the MLR correction
 ##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
 ##   Scaling correction factor                                  1.145
 ##     for the MLR correction
 ## 
-##   Number of free parameters                         19          19
-##   Akaike (AIC)                               13004.879   13004.879
-##   Bayesian (BIC)                             13099.642   13099.642
-##   Sample-size adjusted Bayesian (BIC)        13039.294   13039.294
+##   Number of free parameters                         22          22
+##   Akaike (AIC)                               10157.494   10157.494
+##   Bayesian (BIC)                             10267.218   10267.218
+##   Sample-size adjusted Bayesian (BIC)        10197.342   10197.342
 ## 
 ## Root Mean Square Error of Approximation:
 ## 
-##   RMSEA                                          0.765       0.696
-##   90 Percent Confidence Interval          0.741  0.788       0.675  0.718
-##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+##   RMSEA                                          0.000       0.000
+##   90 Percent Confidence Interval          0.000  0.054       0.000  0.053
+##   P-value RMSEA &lt;= 0.05                          0.926       0.932
 ## 
-##   Robust RMSEA                                               0.764
-##   90 Percent Confidence Interval                             0.739  0.791
+##   Robust RMSEA                                               0.000
+##   90 Percent Confidence Interval                             0.000  0.054
 ## 
 ## Standardized Root Mean Square Residual:
 ## 
-##   SRMR                                           3.186       3.186
+##   SRMR                                           0.026       0.026
 ## 
 ## Parameter Estimates:
 ## 
@@ -1507,54 +1531,54 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               3.347    0.941
+##     Autonomous_T2     1.000                               0.813    0.775
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.255    0.577
+##     BCTs_T2           1.000                               1.014    0.808
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Atnm_T1           1.000                               1.000    0.431
+##     Atnm_T1           1.000                               1.000    1.004
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    0.704
+##     BCTs_T1           1.000                               1.000    0.917
 ##   d_BCTs1 ~                                                             
-##     Atnm_T1          -0.295    0.129   -2.281    0.023   -0.235   -0.360
-##     BCTs_T1           0.381    0.173    2.202    0.028    0.303    0.465
+##     Atnm_T1           0.232    0.057    4.044    0.000    0.229    0.241
+##     BCTs_T1          -0.423    0.060   -7.066    0.000   -0.418   -0.481
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    0.701    1.075
-##     Atnm_T1          -1.845    0.095  -19.471    0.000   -0.551   -0.844
+##     BCTs_T1 (d_bc)    0.121    0.031    3.868    0.000    0.149    0.171
+##     Atnm_T1          -0.383    0.044   -8.686    0.000   -0.472   -0.496
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.654    0.049   33.748    0.000    1.654    0.704
+##     BCTs_T1 (atb_)    0.743    0.037   20.053    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           1.661    0.394    4.217    0.000    0.654    0.654
+##    .d_BCTs1           0.202    0.041    4.906    0.000    0.291    0.291
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1          -0.204    0.295   -0.693    0.488   -0.061   -0.061
-##     Atnm_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.532
+##    .d_Atnm1           1.009    0.130    7.733    0.000    1.241    1.241
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.189    0.180    1.050    0.294    0.150    0.150
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.532
+##    .d_BCTs1           0.629    0.133    4.738    0.000    0.620    0.620
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           4.602    0.425   10.827    0.000    0.411    0.411
-##     Atnm_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.000
+##    .d_Atnm1           0.547    0.051   10.756    0.000    0.829    0.829
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.402    0.258    5.440    0.000    0.890    0.890
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.000
+##    .d_BCTs1           0.877    0.062   14.163    0.000    0.853    0.853
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.589
+##     d_Autonomous1     0.171
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.110
+##     d_BCTs1           0.147
 ## 
 ## 
 ## Group 2 [0]:
@@ -1562,59 +1586,59 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               3.225    0.929
+##     Autonomous_T2     1.000                               0.675    0.649
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               1.027    0.594
+##     BCTs_T2           1.000                               1.032    0.876
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Atnm_T1           1.000                               1.000    0.441
+##     Atnm_T1           1.000                               1.000    1.013
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    0.886
+##     BCTs_T1           1.000                               1.000    0.977
 ##   d_BCTs1 ~                                                             
-##     Atnm_T1          -0.097    0.126   -0.767    0.443   -0.094   -0.144
-##     BCTs_T1          -0.018    0.164   -0.110    0.913   -0.017   -0.027
+##     Atnm_T1           0.254    0.061    4.184    0.000    0.246    0.259
+##     BCTs_T1          -0.521    0.058   -8.904    0.000   -0.505   -0.581
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    0.728    1.115
-##     Atnm_T1          -1.850    0.088  -21.070    0.000   -0.574   -0.879
+##     BCTs_T1 (d_bc)    0.121    0.031    3.868    0.000    0.179    0.206
+##     Atnm_T1          -0.299    0.038   -7.848    0.000   -0.443   -0.467
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.703    0.048   35.660    0.000    1.703    0.725
+##     BCTs_T1 (atb_)    0.743    0.037   20.053    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.973    0.310    3.141    0.002    0.468    0.468
+##    .d_BCTs1           0.100    0.032    3.122    0.002    0.176    0.176
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1          -0.216    0.284   -0.763    0.446   -0.067   -0.067
-##     Atnm_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.532
+##    .d_Atnm1           0.725    0.103    7.023    0.000    1.074    1.074
+##     Atnm_T1 (atnt)    3.411    0.032  106.563    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1           0.423    0.165    2.564    0.010    0.412    0.412
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.532
+##    .d_BCTs1           0.635    0.142    4.464    0.000    0.616    0.616
+##     BCTs_T1 (bctn)    2.818    0.035   80.404    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           4.217    0.337   12.507    0.000    0.405    0.405
-##     Atnm_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.000
+##    .d_Atnm1           0.390    0.032   12.274    0.000    0.858    0.858
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           1.026    0.147    6.992    0.000    0.973    0.973
-##     BCTs_T1 (atnt)    2.348    0.026   89.744    0.000    2.348    1.000
+##    .d_BCTs1           0.830    0.064   13.045    0.000    0.780    0.780
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.595
+##     d_Autonomous1     0.142
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.027
+##     d_BCTs1           0.220
 
 lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_bctToAut)</code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"13004.88","3":"13099.64","4":"2.859072e+03","5":"1053.8517","6":"2","7":"1.442122e-229","_rn_":"fitBLCS_constrained_eqCoupling_bctToAut"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.94488358","6":"5","7":"0.3116190","_rn_":"fitBLCS_constrained"},{"1":"6","2":"10157.49","3":"10267.22","4":"5.686382e+00","5":"0.09953094","6":"1","7":"0.7523933","_rn_":"fitBLCS_constrained_eqCoupling_bctToAut"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
   </script>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
@@ -1630,6 +1654,9 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-4-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-4-2.png" width="2100" /></p>
+</div>
+<div id="autonomous---bct-forced-as-equal" class="section level2">
+<h2>Autonomous -&gt; BCT forced as equal</h2>
 <p>Here we constrain the coupling from autonomous motivation to BCTs:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
   intervention,
@@ -1660,18 +1687,18 @@ BLCS_constrained_eqCoupling_autToBct &lt;-<span class="st"> &#39;</span>
 <span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
 
 <span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
-<span class="st">Autonomous_T1 ~~ c(autint, autint) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
 <span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
 
 <span class="st">d_BCTs1 ~ 1                            # This estimates the intercept of the change score </span>
-<span class="st">BCTs_T1 ~ c(autint, autint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
 <span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
-<span class="st">BCTs_T1 ~~ c(autint, autint) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
 
-<span class="st">d_BCTs1 ~ c(autint, autint) * Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
+<span class="st">d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
 <span class="st">d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
 
-<span class="st">Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
 <span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
 <span class="st">&#39;</span>
 
@@ -1686,7 +1713,7 @@ fitBLCS_constrained_eqCoupling_autToBct &lt;-<span class="st"> </span>lavaan<spa
 ##   86
 
 lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrained_eqCoupling_autToBct, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
-## lavaan (0.5-23.1097) converged normally after  80 iterations
+## lavaan (0.5-23.1097) converged normally after  55 iterations
 ## 
 ##   Number of observations per group         
 ##   1                                                581
@@ -1697,16 +1724,16 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ##   0                                                  7
 ## 
 ##   Estimator                                         ML      Robust
-##   Minimum Function Test Statistic             2218.992    2033.371
-##   Degrees of freedom                                 9           9
-##   P-value (Chi-square)                           0.000       0.000
-##   Scaling correction factor                                  1.091
+##   Minimum Function Test Statistic                5.654       5.769
+##   Degrees of freedom                                 6           6
+##   P-value (Chi-square)                           0.463       0.450
+##   Scaling correction factor                                  0.980
 ##     for the Yuan-Bentler correction
 ## 
 ## Chi-square for each group:
 ## 
-##   1                                           1154.609    1058.025
-##   0                                           1064.382     975.346
+##   1                                              2.578       2.630
+##   0                                              3.076       3.139
 ## 
 ## Model test baseline model:
 ## 
@@ -1716,38 +1743,38 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## 
 ## User model versus baseline model:
 ## 
-##   Comparative Fit Index (CFI)                    0.000       0.000
-##   Tucker-Lewis Index (TLI)                      -0.668      -1.315
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.000       1.000
 ## 
-##   Robust Comparative Fit Index (CFI)                         0.000
-##   Robust Tucker-Lewis Index (TLI)                           -0.673
+##   Robust Comparative Fit Index (CFI)                         1.000
+##   Robust Tucker-Lewis Index (TLI)                            1.000
 ## 
 ## Loglikelihood and Information Criteria:
 ## 
-##   Loglikelihood user model (H0)              -6163.399   -6163.399
-##   Scaling correction factor                                  0.794
+##   Loglikelihood user model (H0)              -5056.731   -5056.731
+##   Scaling correction factor                                  0.935
 ##     for the MLR correction
 ##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
 ##   Scaling correction factor                                  1.145
 ##     for the MLR correction
 ## 
-##   Number of free parameters                         19          19
-##   Akaike (AIC)                               12364.799   12364.799
-##   Bayesian (BIC)                             12459.561   12459.561
-##   Sample-size adjusted Bayesian (BIC)        12399.213   12399.213
+##   Number of free parameters                         22          22
+##   Akaike (AIC)                               10157.462   10157.462
+##   Bayesian (BIC)                             10267.186   10267.186
+##   Sample-size adjusted Bayesian (BIC)        10197.310   10197.310
 ## 
 ## Root Mean Square Error of Approximation:
 ## 
-##   RMSEA                                          0.673       0.645
-##   90 Percent Confidence Interval          0.650  0.697       0.622  0.667
-##   P-value RMSEA &lt;= 0.05                          0.000       0.000
+##   RMSEA                                          0.000       0.000
+##   90 Percent Confidence Interval          0.000  0.054       0.000  0.055
+##   P-value RMSEA &lt;= 0.05                          0.927       0.920
 ## 
-##   Robust RMSEA                                               0.673
-##   90 Percent Confidence Interval                             0.649  0.698
+##   Robust RMSEA                                               0.000
+##   90 Percent Confidence Interval                             0.000  0.054
 ## 
 ## Standardized Root Mean Square Residual:
 ## 
-##   SRMR                                           2.593       2.593
+##   SRMR                                           0.027       0.027
 ## 
 ## Parameter Estimates:
 ## 
@@ -1760,54 +1787,54 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               0.852    0.489
+##     Autonomous_T2     1.000                               0.813    0.774
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               3.303    0.898
+##     BCTs_T2           1.000                               1.014    0.806
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Atnm_T1           1.000                               1.000    0.885
+##     Atnm_T1           1.000                               1.000    1.002
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    0.420
+##     BCTs_T1           1.000                               1.000    0.914
 ##   d_BCTs1 ~                                                             
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    0.721    1.112
-##     BCTs_T1          -1.632    0.082  -19.961    0.000   -0.494   -0.763
+##     Atnm_T1 (d_tb)    0.241    0.042    5.723    0.000    0.238    0.250
+##     BCTs_T1          -0.426    0.054   -7.925    0.000   -0.420   -0.483
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1          -0.135    0.079   -1.708    0.088   -0.158   -0.244
-##     Atnm_T1           0.081    0.113    0.712    0.476    0.095    0.146
+##     BCTs_T1           0.130    0.046    2.851    0.004    0.160    0.184
+##     Atnm_T1          -0.387    0.051   -7.609    0.000   -0.477   -0.502
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.680    0.051   33.062    0.000    1.680    0.706
+##     BCTs_T1 (atb_)    0.743    0.037   20.054    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.914    0.194    4.707    0.000    0.536    0.536
+##    .d_BCTs1           0.202    0.041    4.894    0.000    0.291    0.291
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           0.143    0.207    0.689    0.491    0.167    0.167
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.543
+##    .d_Atnm1           0.998    0.127    7.844    0.000    1.227    1.227
+##     Atnm_T1 (atnt)    3.411    0.032  106.562    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1          -3.313    0.268  -12.368    0.000   -1.003   -1.003
-##     BCTs_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.543
+##    .d_BCTs1           0.604    0.126    4.797    0.000    0.596    0.596
+##     BCTs_T1 (bctn)    2.818    0.035   80.407    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.704    0.089    7.934    0.000    0.969    0.969
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.000
+##    .d_Atnm1           0.547    0.051   10.769    0.000    0.828    0.828
+##     Atnm_T1 (atvr)    1.108    0.039   28.243    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           4.134    0.293   14.112    0.000    0.379    0.379
-##     BCTs_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.000
+##    .d_BCTs1           0.877    0.062   14.174    0.000    0.852    0.852
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.031
+##     d_Autonomous1     0.172
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.621
+##     d_BCTs1           0.148
 ## 
 ## 
 ## Group 2 [0]:
@@ -1815,59 +1842,59 @@ lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_constrai
 ## Latent Variables:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   d_Autonomous1 =~                                                      
-##     Autonomous_T2     1.000                               0.664    0.423
+##     Autonomous_T2     1.000                               0.674    0.649
 ##   d_BCTs1 =~                                                            
-##     BCTs_T2           1.000                               3.178    0.906
+##     BCTs_T2           1.000                               1.030    0.877
 ## 
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T2 ~                                                       
-##     Atnm_T1           1.000                               1.000    0.983
+##     Atnm_T1           1.000                               1.000    1.014
 ##   BCTs_T2 ~                                                             
-##     BCTs_T1           1.000                               1.000    0.440
+##     BCTs_T1           1.000                               1.000    0.979
 ##   d_BCTs1 ~                                                             
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    0.749    1.156
-##     BCTs_T1          -1.769    0.079  -22.291    0.000   -0.557   -0.859
+##     Atnm_T1 (d_tb)    0.241    0.042    5.723    0.000    0.234    0.247
+##     BCTs_T1          -0.515    0.050  -10.299    0.000   -0.500   -0.575
 ##   d_Autonomous1 ~                                                       
-##     BCTs_T1          -0.024    0.063   -0.385    0.700   -0.036   -0.056
-##     Atnm_T1          -0.058    0.095   -0.612    0.540   -0.087   -0.135
+##     BCTs_T1           0.113    0.042    2.664    0.008    0.167    0.192
+##     Atnm_T1          -0.294    0.044   -6.712    0.000   -0.437   -0.460
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##   Autonomous_T1 ~~                                                      
-##     BCTs_T1           1.730    0.049   35.406    0.000    1.730    0.727
+##     BCTs_T1 (atb_)    0.743    0.037   20.054    0.000    0.743    0.614
 ##  .d_Autonomous1 ~~                                                      
-##    .d_BCTs1           0.419    0.157    2.676    0.007    0.332    0.332
+##    .d_BCTs1           0.100    0.032    3.124    0.002    0.176    0.176
 ## 
 ## Intercepts:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
-##    .d_Atnm1           0.301    0.189    1.596    0.110    0.454    0.454
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.543
+##    .d_Atnm1           0.732    0.103    7.137    0.000    1.086    1.086
+##     Atnm_T1 (atnt)    3.411    0.032  106.562    0.000    3.411    3.241
 ##    .Atnm_T2           0.000                               0.000    0.000
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_BCTs1          -3.182    0.284  -11.222    0.000   -1.001   -1.001
-##     BCTs_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.543
+##    .d_BCTs1           0.661    0.129    5.113    0.000    0.642    0.642
+##     BCTs_T1 (bctn)    2.818    0.035   80.407    0.000    2.818    2.450
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
 ##    .BCTs_T2           0.000                               0.000    0.000
-##    .d_Atnm1           0.426    0.044    9.632    0.000    0.968    0.968
-##     Atnm_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.000
+##    .d_Atnm1           0.390    0.032   12.251    0.000    0.860    0.860
+##     Atnm_T1 (atvr)    1.108    0.039   28.243    0.000    1.108    1.000
 ##    .Atnm_T2           0.000                               0.000    0.000
-##    .d_BCTs1           3.735    0.254   14.695    0.000    0.370    0.370
-##     BCTs_T1 (atnt)    2.380    0.027   89.512    0.000    2.380    1.000
+##    .d_BCTs1           0.831    0.064   13.009    0.000    0.783    0.783
+##     BCTs_T1 (bctv)    1.324    0.050   26.595    0.000    1.324    1.000
 ## 
 ## R-Square:
 ##                    Estimate
 ##     BCTs_T2           1.000
-##     d_Autonomous1     0.032
+##     d_Autonomous1     0.140
 ##     Autonomous_T2     1.000
-##     d_BCTs1           0.630
+##     d_BCTs1           0.217
 
 lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_constrained_eqCoupling_autToBct)</code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"7","2":"10897.14","3":"11001.88","4":"7.473320e+02","5":"763.5668","6":"7","7":"1.347048e-160","_rn_":"fitBLCS_constrained"},{"1":"9","2":"12364.80","3":"12459.56","4":"2.218992e+03","5":"990.8782","6":"2","7":"6.815929e-216","_rn_":"fitBLCS_constrained_eqCoupling_autToBct"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.94488358","6":"5","7":"0.3116190","_rn_":"fitBLCS_constrained"},{"1":"6","2":"10157.46","3":"10267.19","4":"5.654220e+00","5":"0.09340132","6":"1","7":"0.7598968","_rn_":"fitBLCS_constrained_eqCoupling_autToBct"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
   </script>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
@@ -1883,6 +1910,263 @@ semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_constr
                                <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
                                <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
 <p><img src="El-Rogier_files/figure-html/unnamed-chunk-5-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-5-2.png" width="2100" /></p>
+</div>
+<div id="all-previous-constraints-imposed-at-once" class="section level2">
+<h2>All previous constraints imposed at once</h2>
+<p>The information criteria seem to imply somewhat better out-of-sample prediction for each of the constraints introduced previously. Here we set all of them:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_BLCS &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(
+  intervention,
+  <span class="dt">Autonomous_T1 =</span> PA_autonomous_T1,
+  <span class="dt">Autonomous_T2 =</span> PA_autonomous_T3,
+  <span class="dt">frqbct_T1 =</span> PA_frqbct_T1,
+  <span class="dt">frqbct_T2 =</span> PA_frqbct_T3,
+  <span class="dt">agrbct_T1 =</span> PA_agrbct_T1,
+  <span class="dt">agrbct_T2 =</span> PA_agrbct_T3) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">BCTs_T1 =</span> <span class="kw">mean</span>(<span class="kw">c</span>(frqbct_T1, agrbct_T1), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+                <span class="dt">BCTs_T2 =</span> <span class="kw">mean</span>(<span class="kw">c</span>(frqbct_T2, agrbct_T2), <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;frq&quot;</span>), <span class="op">-</span><span class="kw">contains</span>(<span class="st">&quot;agr&quot;</span>))
+
+
+<span class="co">#Fit the Bivariate Latent Change Score model to simulated data</span>
+BLCS_allConstraints &lt;-<span class="st"> &#39;</span>
+
+<span class="st">Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1</span>
+<span class="st">d_Autonomous1 =~ 1 * Autonomous_T2    # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2</span>
+<span class="st">d_Autonomous1 ~ c(d_autint, d_autint) * 1                     # This estimates the intercept of the change score </span>
+<span class="st">Autonomous_T1 ~  c(autint, autint)*1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups </span>
+<span class="st">Autonomous_T2 ~ 0 * 1                 # This constrains the intercept of Autonomous_T2 to 0</span>
+
+<span class="st">BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1</span>
+<span class="st">d_BCTs1 =~ 1 * BCTs_T2    # This defines the latent change score factor as measured perfectly by scores on BCTs_T2</span>
+<span class="st">BCTs_T2 ~ 0 * 1           # This line constrains the intercept of BCTs_T2 to 0</span>
+<span class="st">BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  </span>
+
+<span class="st">d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores</span>
+<span class="st">Autonomous_T1 ~~ c(autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 </span>
+<span class="st">Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  </span>
+
+<span class="st">d_BCTs1 ~ c(d_bctint, d_bctint) * 1                            # This estimates the intercept of the change score </span>
+<span class="st">BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 </span>
+<span class="st">d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores </span>
+<span class="st">BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 </span>
+
+<span class="st">d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback</span>
+<span class="st">d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback</span>
+
+<span class="st">Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance</span>
+<span class="st">d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance</span>
+<span class="st">&#39;</span>
+
+fitBLCS_allConstraints &lt;-<span class="st"> </span>lavaan<span class="op">::</span><span class="kw">lavaan</span>(BLCS_allConstraints, 
+                          <span class="dt">data =</span> data_BLCS, 
+                          <span class="dt">estimator =</span> <span class="st">&#39;mlr&#39;</span>, 
+                          <span class="dt">fixed.x =</span> <span class="ot">FALSE</span>,
+                          <span class="dt">group =</span> <span class="st">&quot;intervention&quot;</span>,
+                          <span class="dt">missing =</span> <span class="st">&#39;fiml&#39;</span>)
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: group variable &#39;intervention&#39; contains missing values
+## Warning in lav_data_full(data = data, group = group, cluster = cluster, : lavaan <span class="al">WARNING</span>: some cases are empty and will be ignored:
+##   86
+
+lavaan<span class="op">::</span><span class="kw">summary</span>(fitBLCS_allConstraints, <span class="dt">fit.measures =</span> <span class="ot">TRUE</span>, <span class="dt">standardized =</span> <span class="ot">TRUE</span>, <span class="dt">rsquare =</span> <span class="ot">TRUE</span>)
+## lavaan (0.5-23.1097) converged normally after  45 iterations
+## 
+##   Number of observations per group         
+##   1                                                581
+##   0                                                502
+## 
+##   Number of missing patterns per group     
+##   1                                                  8
+##   0                                                  7
+## 
+##   Estimator                                         ML      Robust
+##   Minimum Function Test Statistic                9.235       8.846
+##   Degrees of freedom                                 9           9
+##   P-value (Chi-square)                           0.416       0.452
+##   Scaling correction factor                                  1.044
+##     for the Yuan-Bentler correction
+## 
+## Chi-square for each group:
+## 
+##   1                                              4.473       4.284
+##   0                                              4.762       4.562
+## 
+## Model test baseline model:
+## 
+##   Minimum Function Test Statistic             1778.504    1178.148
+##   Degrees of freedom                                12          12
+##   P-value                                        0.000       0.000
+## 
+## User model versus baseline model:
+## 
+##   Comparative Fit Index (CFI)                    1.000       1.000
+##   Tucker-Lewis Index (TLI)                       1.000       1.000
+## 
+##   Robust Comparative Fit Index (CFI)                         1.000
+##   Robust Tucker-Lewis Index (TLI)                            1.000
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)              -5058.521   -5058.521
+##   Scaling correction factor                                  0.810
+##     for the MLR correction
+##   Loglikelihood unrestricted model (H1)      -5053.904   -5053.904
+##   Scaling correction factor                                  1.145
+##     for the MLR correction
+## 
+##   Number of free parameters                         19          19
+##   Akaike (AIC)                               10155.042   10155.042
+##   Bayesian (BIC)                             10249.804   10249.804
+##   Sample-size adjusted Bayesian (BIC)        10189.457   10189.457
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.007       0.000
+##   90 Percent Confidence Interval          0.000  0.049       0.000  0.047
+##   P-value RMSEA &lt;= 0.05                          0.955       0.965
+## 
+##   Robust RMSEA                                               0.000
+##   90 Percent Confidence Interval                             0.000  0.049
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.031       0.031
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Observed
+##   Standard Errors                   Robust.huber.white
+## 
+## 
+## Group 1 [1]:
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   d_Autonomous1 =~                                                      
+##     Autonomous_T2     1.000                               0.798    0.739
+##   d_BCTs1 =~                                                            
+##     BCTs_T2           1.000                               1.018    0.812
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T2 ~                                                       
+##     Atnm_T1           1.000                               1.000    0.974
+##   BCTs_T2 ~                                                             
+##     BCTs_T1           1.000                               1.000    0.918
+##   d_BCTs1 ~                                                             
+##     Atnm_T1 (d_tb)    0.246    0.042    5.811    0.000    0.241    0.254
+##     BCTs_T1          -0.436    0.044   -9.813    0.000   -0.428   -0.492
+##   d_Autonomous1 ~                                                       
+##     BCTs_T1 (d_bc)    0.121    0.031    3.876    0.000    0.152    0.175
+##     Atnm_T1          -0.342    0.034   -9.992    0.000   -0.429   -0.451
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T1 ~~                                                      
+##     BCTs_T1 (atb_)    0.743    0.037   20.054    0.000    0.743    0.614
+##  .d_Autonomous1 ~~                                                      
+##    .d_BCTs1           0.202    0.041    4.898    0.000    0.291    0.291
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .d_Atnm1 (d_tn)    0.855    0.082   10.429    0.000    1.072    1.072
+##     Atnm_T1 (atnt)    3.411    0.032  106.561    0.000    3.411    3.241
+##    .Atnm_T2           0.000                               0.000    0.000
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_BCTs1 (d_bc)    0.617    0.096    6.406    0.000    0.607    0.607
+##     BCTs_T1 (bctn)    2.818    0.035   80.405    0.000    2.818    2.450
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_Atnm1           0.549    0.052   10.614    0.000    0.863    0.863
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
+##    .Atnm_T2           0.000                               0.000    0.000
+##    .d_BCTs1           0.877    0.062   14.234    0.000    0.847    0.847
+##     BCTs_T1 (bctv)    1.324    0.050   26.597    0.000    1.324    1.000
+## 
+## R-Square:
+##                    Estimate
+##     BCTs_T2           1.000
+##     d_Autonomous1     0.137
+##     Autonomous_T2     1.000
+##     d_BCTs1           0.153
+## 
+## 
+## Group 2 [0]:
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   d_Autonomous1 =~                                                      
+##     Autonomous_T2     1.000                               0.689    0.681
+##   d_BCTs1 =~                                                            
+##     BCTs_T2           1.000                               1.026    0.867
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T2 ~                                                       
+##     Atnm_T1           1.000                               1.000    1.041
+##   BCTs_T2 ~                                                             
+##     BCTs_T1           1.000                               1.000    0.972
+##   d_BCTs1 ~                                                             
+##     Atnm_T1 (d_tb)    0.246    0.042    5.811    0.000    0.239    0.252
+##     BCTs_T1          -0.506    0.044  -11.497    0.000   -0.494   -0.568
+##   d_Autonomous1 ~                                                       
+##     BCTs_T1 (d_bc)    0.121    0.031    3.876    0.000    0.176    0.202
+##     Atnm_T1          -0.334    0.035   -9.514    0.000   -0.485   -0.510
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##   Autonomous_T1 ~~                                                      
+##     BCTs_T1 (atb_)    0.743    0.037   20.054    0.000    0.743    0.614
+##  .d_Autonomous1 ~~                                                      
+##    .d_BCTs1           0.100    0.032    3.122    0.002    0.175    0.175
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .d_Atnm1 (d_tn)    0.855    0.082   10.429    0.000    1.241    1.241
+##     Atnm_T1 (atnt)    3.411    0.032  106.561    0.000    3.411    3.241
+##    .Atnm_T2           0.000                               0.000    0.000
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_BCTs1 (d_bc)    0.617    0.096    6.406    0.000    0.602    0.602
+##     BCTs_T1 (bctn)    2.818    0.035   80.405    0.000    2.818    2.450
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)   Std.lv  Std.all
+##    .BCTs_T2           0.000                               0.000    0.000
+##    .d_Atnm1           0.392    0.032   12.377    0.000    0.825    0.825
+##     Atnm_T1 (atvr)    1.108    0.039   28.244    0.000    1.108    1.000
+##    .Atnm_T2           0.000                               0.000    0.000
+##    .d_BCTs1           0.831    0.064   12.983    0.000    0.790    0.790
+##     BCTs_T1 (bctv)    1.324    0.050   26.597    0.000    1.324    1.000
+## 
+## R-Square:
+##                    Estimate
+##     BCTs_T2           1.000
+##     d_Autonomous1     0.175
+##     Autonomous_T2     1.000
+##     d_BCTs1           0.210
+
+lavaan<span class="op">::</span><span class="kw">anova</span>(fitBLCS, fitBLCS_constrained, fitBLCS_allConstraints)</code></pre></div>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["int"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Chisq"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Chisq diff"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Df diff"],"name":[6],"type":["int"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"10163.81","3":"10303.46","4":"4.386269e-12","5":"NA","6":"NA","7":"NA","_rn_":"fitBLCS"},{"1":"5","2":"10159.35","3":"10274.06","4":"5.540189e+00","5":"5.944884","6":"5","7":"0.3116190","_rn_":"fitBLCS_constrained"},{"1":"9","2":"10155.04","3":"10249.80","4":"9.234847e+00","5":"3.120656","6":"4","7":"0.5378409","_rn_":"fitBLCS_allConstraints"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[15],"max":[15]},"pages":{}}}
+  </script>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+semPlot<span class="op">::</span><span class="kw">semPaths</span>(fitBLCS_allConstraints, 
+                  <span class="dt">what =</span> <span class="st">&quot;std&quot;</span>,
+                  <span class="dt">ask =</span> <span class="ot">FALSE</span>,
+                  <span class="dt">label.cex =</span> .<span class="dv">6</span>, 
+                  <span class="dt">label.scale =</span> <span class="ot">FALSE</span>,
+                  <span class="dt">edge.label.cex =</span> <span class="fl">0.75</span>, 
+                  <span class="dt">layout =</span> <span class="st">&quot;tree2&quot;</span>,
+                  <span class="dt">intercepts =</span> <span class="ot">TRUE</span>,
+                  <span class="dt">color =</span> <span class="kw">list</span>(<span class="dt">lat =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">1</span>], 
+                               <span class="dt">man =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">2</span>], 
+                               <span class="dt">int =</span> viridis<span class="op">::</span><span class="kw">viridis</span>(<span class="dv">3</span>, <span class="dt">begin =</span> <span class="fl">0.3</span>)[<span class="dv">3</span>]))</code></pre></div>
+<p><img src="El-Rogier_files/figure-html/unnamed-chunk-6-1.png" width="2100" /><img src="El-Rogier_files/figure-html/unnamed-chunk-6-2.png" width="2100" /></p>
+</div>
 </div>
 
 
