@@ -65,8 +65,8 @@ BCTs_T1 ~ 1            # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1        # This estimates the variance of the change scores 
 BCTs_T1 ~~ BCTs_T1      # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ Autonomous_T1 + BCTs_T1   # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ BCTs_T1 + Autonomous_T1   # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1   # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1   # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ BCTs_T1     # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1          # This estimates the d_Autonomous and d_BCTs covariance
@@ -145,8 +145,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                    # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -222,8 +222,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -299,8 +299,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -376,8 +376,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -451,8 +451,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -525,8 +525,8 @@ BCTs_T1 ~ c(bctint, bctint) * 1        # This estimates the intercept of BCTs_T1
 d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
 BCTs_T1 ~~ c(bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
 
-d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the COG to NEU coupling parameter and the COG to COG self-feedback
-d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the NEU to COG coupling parameter and the NEU to NEU self-feedback
+d_BCTs1 ~ c(d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ c(d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
 
 Autonomous_T1 ~~ c(autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
 d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
@@ -554,5 +554,313 @@ semPlot::semPaths(fitBLCS_allConstraints,
                   color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
                                man = viridis::viridis(3, begin = 0.3)[2], 
                                int = viridis::viridis(3, begin = 0.3)[3]))
+
+```
+
+
+# Constraints for the four educational tracks
+
+## Basic model
+
+```{r}
+data_BLCS <- df %>% dplyr::select(
+  track,
+  Autonomous_T1 = PA_autonomous_T1,
+  Autonomous_T2 = PA_autonomous_T3,
+  frqbct_T1 = PA_frqbct_T1,
+  frqbct_T2 = PA_frqbct_T3,
+  agrbct_T1 = PA_agrbct_T1,
+  agrbct_T2 = PA_agrbct_T3) %>% 
+  filter(track != "Other") %>% 
+  rowwise() %>% 
+  dplyr::mutate(BCTs_T1 = mean(c(frqbct_T1, agrbct_T1), na.rm = TRUE),
+                BCTs_T2 = mean(c(frqbct_T2, agrbct_T2), na.rm = TRUE)) %>% 
+  dplyr::select(-contains("frq"), -contains("agr"))
+
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS <- '
+
+Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1
+d_Autonomous1 =~ 1 * Autonomous_T2    # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2
+d_Autonomous1 ~ 1                     # This estimates the intercept of the change score 
+Autonomous_T1 ~ 1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups 
+Autonomous_T2 ~ 0 * 1                 # This constrains the intercept of Autonomous_T2 to 0
+
+BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1
+d_BCTs1 =~ 1 * BCTs_T2    # This defines the latent change score factor as measured perfectly by scores on BCTs_T2
+BCTs_T2 ~ 0 * 1           # This line constrains the intercept of BCTs_T2 to 0
+BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  
+
+d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores
+Autonomous_T1 ~~ Autonomous_T1  # This estimates the variance of the Autonomous_T1 
+Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  
+
+d_BCTs1 ~ 1                            # This estimates the intercept of the change score 
+BCTs_T1 ~ 1        # This estimates the intercept of BCTs_T1 
+d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
+BCTs_T1 ~~ BCTs_T1 # This estimates the variance of BCTs_T1 
+
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
+
+Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
+d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
+'
+
+fitBLCS <- lavaan::lavaan(BLCS, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "track",
+                          missing = 'fiml')
+
+lavaan::summary(fitBLCS, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+semPlot::semPaths(fitBLCS, 
+                  what = "std",
+                  ask = FALSE,
+                  label.cex = .6, 
+                  label.scale = FALSE,
+                  edge.label.cex = 0.75, 
+                  layout = "tree2",
+                  intercepts = TRUE,
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+```
+
+## Expected constraints model
+
+```{r}
+data_BLCS <- df %>% dplyr::select(
+  track,
+  Autonomous_T1 = PA_autonomous_T1,
+  Autonomous_T2 = PA_autonomous_T3,
+  frqbct_T1 = PA_frqbct_T1,
+  frqbct_T2 = PA_frqbct_T3,
+  agrbct_T1 = PA_agrbct_T1,
+  agrbct_T2 = PA_agrbct_T3) %>% 
+  filter(track != "Other") %>% 
+  rowwise() %>% 
+  dplyr::mutate(BCTs_T1 = mean(c(frqbct_T1, agrbct_T1), na.rm = TRUE),
+                BCTs_T2 = mean(c(frqbct_T2, agrbct_T2), na.rm = TRUE)) %>% 
+  dplyr::select(-contains("frq"), -contains("agr"))
+
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS_constrained <- '
+
+Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1
+d_Autonomous1 =~ 1 * Autonomous_T2    # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2
+d_Autonomous1 ~  1                     # This estimates the intercept of the change score 
+Autonomous_T1 ~  c(autint, autint, autint, autint) * 1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups 
+Autonomous_T2 ~ 0 * 1                 # This constrains the intercept of Autonomous_T2 to 0
+
+BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1
+d_BCTs1 =~ 1 * BCTs_T2    # This defines the latent change score factor as measured perfectly by scores on BCTs_T2
+BCTs_T2 ~ 0 * 1           # This line constrains the intercept of BCTs_T2 to 0
+BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  
+
+d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores
+Autonomous_T1 ~~ c(autvar, autvar, autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 
+Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  
+
+d_BCTs1 ~ 1                            # This estimates the intercept of the change score 
+BCTs_T1 ~ c(bctint, bctint, bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 
+d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
+BCTs_T1 ~~ c(bctvar, bctvar, bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
+
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
+
+Autonomous_T1 ~~ c(autbct_cov, autbct_cov, autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
+d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
+'
+
+fitBLCS_constrained <- lavaan::lavaan(BLCS_constrained, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "track",
+                          missing = 'fiml')
+
+lavaan::summary(fitBLCS_constrained, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+lavaan::anova(fitBLCS, fitBLCS_constrained)
+
+semPlot::semPaths(fitBLCS_constrained, 
+                  what = "std",
+                  ask = FALSE,
+                  label.cex = .6, 
+                  label.scale = FALSE,
+                  edge.label.cex = 0.75, 
+                  layout = "tree2",
+                  intercepts = TRUE,
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+```
+
+Turns out, that the model fits significantly better with 
+
+## All constraints
+
+```{r}
+data_BLCS <- df %>% dplyr::select(
+  track,
+  Autonomous_T1 = PA_autonomous_T1,
+  Autonomous_T2 = PA_autonomous_T3,
+  frqbct_T1 = PA_frqbct_T1,
+  frqbct_T2 = PA_frqbct_T3,
+  agrbct_T1 = PA_agrbct_T1,
+  agrbct_T2 = PA_agrbct_T3) %>% 
+  filter(track != "Other") %>% 
+  rowwise() %>% 
+  dplyr::mutate(BCTs_T1 = mean(c(frqbct_T1, agrbct_T1), na.rm = TRUE),
+                BCTs_T2 = mean(c(frqbct_T2, agrbct_T2), na.rm = TRUE)) %>% 
+  dplyr::select(-contains("frq"), -contains("agr"))
+
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS_allConstraints <- '
+
+Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1
+d_Autonomous1 =~ 1 * Autonomous_T2    # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2
+d_Autonomous1 ~ c(d_autint, d_autint, d_autint, d_autint) * 1                     # This estimates the intercept of the change score 
+Autonomous_T1 ~  c(autint, autint, autint, autint) * 1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups 
+Autonomous_T2 ~ 0 * 1                 # This constrains the intercept of Autonomous_T2 to 0
+
+BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1
+d_BCTs1 =~ 1 * BCTs_T2    # This defines the latent change score factor as measured perfectly by scores on BCTs_T2
+BCTs_T2 ~ 0 * 1           # This line constrains the intercept of BCTs_T2 to 0
+BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  
+
+d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores
+Autonomous_T1 ~~ c(autvar, autvar, autvar, autvar) * Autonomous_T1  # This estimates the variance of the Autonomous_T1 
+Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  
+
+d_BCTs1 ~ c(d_bctint, d_bctint, d_bctint, d_bctint) * 1                            # This estimates the intercept of the change score 
+BCTs_T1 ~ c(bctint, bctint, bctint, bctint) * 1        # This estimates the intercept of BCTs_T1 
+d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
+BCTs_T1 ~~ c(bctvar, bctvar, bctvar, bctvar) * BCTs_T1 # This estimates the variance of BCTs_T1 
+
+d_BCTs1 ~ c(d_autbct, d_autbct, d_autbct, d_autbct) * Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ c(d_bctaut, d_bctaut, d_bctaut, d_bctaut) * BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
+
+Autonomous_T1 ~~ c(autbct_cov, autbct_cov, autbct_cov, autbct_cov) * BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
+d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
+'
+
+fitBLCS_allConstraints <- lavaan::lavaan(BLCS_allConstraints, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "track",
+                          missing = 'fiml')
+
+lavaan::summary(fitBLCS_allConstraints, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_allConstraints)
+
+semPlot::semPaths(fitBLCS_allConstraints, 
+                  what = "std",
+                  ask = FALSE,
+                  label.cex = .6, 
+                  label.scale = FALSE,
+                  edge.label.cex = 0.75, 
+                  layout = "tree2",
+                  intercepts = TRUE,
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
+```
+
+## Constraints on basic model by group.equal
+
+```{r}
+data_BLCS <- df %>% dplyr::select(
+  track,
+  Autonomous_T1 = PA_autonomous_T1,
+  Autonomous_T2 = PA_autonomous_T3,
+  frqbct_T1 = PA_frqbct_T1,
+  frqbct_T2 = PA_frqbct_T3,
+  agrbct_T1 = PA_agrbct_T1,
+  agrbct_T2 = PA_agrbct_T3) %>% 
+  filter(track != "Other") %>% 
+  rowwise() %>% 
+  dplyr::mutate(BCTs_T1 = mean(c(frqbct_T1, agrbct_T1), na.rm = TRUE),
+                BCTs_T2 = mean(c(frqbct_T2, agrbct_T2), na.rm = TRUE)) %>% 
+  dplyr::select(-contains("frq"), -contains("agr"))
+
+
+#Fit the Bivariate Latent Change Score model to simulated data
+BLCS_constrained2 <- '
+
+Autonomous_T2 ~ 1 * Autonomous_T1     # This parameter regresses Autonomous_T2 perfectly on Autonomous_T1
+d_Autonomous1 =~ 1 * Autonomous_T2    # This defines the latent change score factor as measured perfectly by scores on Autonomous_T2
+d_Autonomous1 ~ 1                     # This estimates the intercept of the change score 
+Autonomous_T1 ~ 1  # This constrains the intercept of Autonomous_T1 to be identical across intervention and control groups 
+Autonomous_T2 ~ 0 * 1                 # This constrains the intercept of Autonomous_T2 to 0
+
+BCTs_T2 ~ 1 * BCTs_T1     # This parameter regresses BCTs_T2 perfectly on BCTs_T1
+d_BCTs1 =~ 1 * BCTs_T2    # This defines the latent change score factor as measured perfectly by scores on BCTs_T2
+BCTs_T2 ~ 0 * 1           # This line constrains the intercept of BCTs_T2 to 0
+BCTs_T2 ~~ 0 * BCTs_T2    # This fixes the variance of the BCTs_T1 to 0  
+
+d_Autonomous1 ~~  d_Autonomous1                     # This estimates the variance of the change scores
+Autonomous_T1 ~~ Autonomous_T1  # This estimates the variance of the Autonomous_T1 
+Autonomous_T2 ~~ 0 * Autonomous_T2                  # This fixes the variance of the Autonomous_T2 to 0  
+
+d_BCTs1 ~ 1                            # This estimates the intercept of the change score 
+BCTs_T1 ~ 1        # This estimates the intercept of BCTs_T1 
+d_BCTs1 ~~ d_BCTs1                     # This estimates the variance of the change scores 
+BCTs_T1 ~~ BCTs_T1 # This estimates the variance of BCTs_T1 
+
+d_BCTs1 ~ Autonomous_T1 + BCTs_T1       # This estimates the autonomous to BCT coupling parameter and the BCT (T1) to BCT (T2) self-feedback
+d_Autonomous1 ~ BCTs_T1 + Autonomous_T1 # This estimates the BCT to autonomous coupling parameter and the autonomous (T1) to autonomous (T2) self-feedback
+
+Autonomous_T1 ~~ BCTs_T1                      # This estimates the Autonomous_T1 BCTs_T1 covariance
+d_Autonomous1 ~~ d_BCTs1                      # This estimates the d_Autonomous and d_BCTs covariance
+'
+
+fitBLCS_constrained2 <- lavaan::lavaan(BLCS_constrained2, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "track",
+                          group.equal = c("intercepts", "means"),
+                          missing = 'fiml')
+
+lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained2)
+
+fitBLCS_constrained2 <- lavaan::lavaan(BLCS_constrained2, 
+                          data = data_BLCS, 
+                          estimator = 'mlr', 
+                          fixed.x = FALSE,
+                          group = "track",
+                          group.equal = c("intercepts"),
+                          missing = 'fiml')
+
+lavaan::anova(fitBLCS, fitBLCS_constrained, fitBLCS_constrained2)
+
+
+lavaan::summary(fitBLCS_constrained2, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+semPlot::semPaths(fitBLCS_constrained2, 
+                  what = "std",
+                  ask = FALSE,
+                  label.cex = .6, 
+                  label.scale = FALSE,
+                  edge.label.cex = 0.75, 
+                  layout = "tree2",
+                  intercepts = TRUE,
+                  color = list(lat = viridis::viridis(3, begin = 0.3)[1], 
+                               man = viridis::viridis(3, begin = 0.3)[2], 
+                               int = viridis::viridis(3, begin = 0.3)[3]))
+
 
 ```
