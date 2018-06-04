@@ -723,7 +723,7 @@ semPlot::semPaths(fitMG_ULCS, "std", label.cex = .6, label.scale = FALSE, edge.l
 Seems like autonomous motivation predicts activity measured with either self-report or accelerometry, but intervention won't predict autonomous motivation.
 
 ```{r mediation}
-data_mediation <- df %>% dplyr::select(intervention, X = PA_agrbct_T1, M = PA_autonomous_T1, Y = paAccelerometer_T3)
+data_mediation <- df %>% dplyr::select(intervention, X = PA_agrbct_T1, M = PA_autonomous_T3, Y = paAccelerometer_T3)
 
 model <- ' # direct effect
              Y ~ c*X

@@ -12,7 +12,7 @@ if (!require(pacman)) install.packages("pacman")
 
 CRANpacks <- c("viridis", "bookdown", "knitr", "tidyverse", "haven", "lme4", 
                "userfriendlyscience", "devtools", "corrgram", "sjPlot", "DT",
-               "lavaan", "ggplot2", "reshape2", "semPlot") 
+               "lavaan", "ggplot2", "reshape2", "semPlot", "fitdistrplus") 
 
 instpacks <- setdiff(CRANpacks, pacman::p_library())
 
@@ -483,7 +483,8 @@ d <- lmi %>% dplyr::select(id = ID,
                            PA_copplan_02_T3 = Kys0120.3,
                            PA_copplan_03_T3 = Kys0121.3,
                            PA_copplan_04_T3 = Kys0122.3,
-                           sitBreaks_T1 = YlosT1_ka
+                           sitBreaks_T1 = YlosT1_ka,
+                           sitBreaks_T3 = YlosT3_ka
 )
 
 # Reverse coded items to normal: 
@@ -670,7 +671,7 @@ df <- cbind(df, motidf1, motidf2)
 
 # Create change scores
 t1_vars <- grep("_T1", colnames(df), value = TRUE)
-t1_vars <- grep("big5|fat|paLastweek|PA_opportunitiesReverseCoded_08|sitBreaks_T1", t1_vars, value = TRUE, invert = TRUE) # drop variables not in T3
+t1_vars <- grep("big5|fat|paLastweek|PA_opportunitiesReverseCoded_08", t1_vars, value = TRUE, invert = TRUE) # drop variables not in T3
 t3_vars <- grep("_T3", colnames(df), value = TRUE)
 df[, paste0(stringr::str_sub(t1_vars, end = -4), "_diff")] <- df[, t3_vars] - df[, t1_vars]
 

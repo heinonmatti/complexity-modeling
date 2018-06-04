@@ -1421,3 +1421,1190 @@ nct_results_interventionAllocation_combined_items$einv.pvals %>%
 cat("Number of edges, which appear different (p<0.05):", sum(nct_results_interventionAllocation_combined_items$einv.pvals$"p-value" < 0.05))
 
 ```
+
+# PA determinant change network
+
+# Accelerometer-measured PA
+
+```{r determinants, include = FALSE, eval = FALSE}
+
+data <- df %>% 
+  dplyr::select(
+    "PA acc" = paAccelerometer_diff,
+    "PA selfrep" = padaysLastweek_diff,
+    "planning" = PA_actCop_diff,
+    "BCT" = PA_frqbct_diff, 
+    "amotivation" = PA_amotivation_diff,
+    "autonomous" = PA_autonomous_diff, 
+    "controlled" = PA_controlled_diff, 
+    "descriptive norm" = PA_dnorm_diff,
+    "injunctive norm" = PA_inorm_diff,
+    "intention" = PA_intention_diff, 
+    "outcome expectations" = PA_outcomeExpectations_diff, 
+    "opportunities" = PA_opportunities_diff, 
+    "self-efficacy PBC" = PA_sePbc_diff) %>% 
+  mutate_all(funs(as.numeric(.))) 
+
+data %>% summarise_all(funs(sd = sd(., na.rm = TRUE)))
+
+covMatrix <- data %>% cov(use = "pairwise.complete.obs")
+
+# Transform the matrix so, that lower diagonal of the matrix shows partial correlations,
+# while the upper one shows bivariate correlations.
+matrix_corLower_parcorUpper <- covMatrix %>% ggm::correlations()
+
+# Show the matrix
+matrix_corLower_parcorUpper %>% papaja::apa_table(caption = "Correlation matrix of hypothesised determinants. Upper diagonal shows bivariate correlations, lower diagonal shows partial correlations")
+
+# Plot the matrix as a correlogram
+matrix_corLower_parcorUpper %>% corrgram::corrgram(
+  type = "cor",
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.pie,
+  main = "Bivariate (upper diagonal) and partial (lower diagonal)\ncorrelations of PA determinant changes")
+
+### Gaussian Graphical Model (network)
+
+determinants_bootnet <- bootnet::estimateNetwork(data, default="EBICglasso")
+
+bootnetgraph <- plot(determinants_bootnet, edge.labels = TRUE, labels = names(data), label.scale = FALSE,
+       title = "partial correlation network, with LASSO regularisation and EBIC model selection")
+
+corgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "cor",
+       labels = names(data),
+       label.scale = FALSE,
+       edge.labels = TRUE, 
+       title = "bivariate correlation network")
+
+pcorgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "pcor",
+       labels = names(data),
+       label.scale = FALSE,
+       edge.labels = TRUE, 
+       title = "partial correlation network")
+
+# Average the layout and plot all according to that
+avlayout <- qgraph::averageLayout(bootnetgraph, corgraph, pcorgraph)
+
+corgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "cor",
+       labels = names(data),
+       edge.labels = TRUE, 
+       layout = avlayout, 
+       title = "bivariate correlation network",
+       theme = "colorblind",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+
+# To help with visual comparison, that last argument takes the maximum edge of the three 
+# graphs and places that as the benchmark for the thickest line in all plots.
+
+pcorgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "pcor",
+       labels = names(data),
+       edge.labels = TRUE, 
+       layout = avlayout,
+       title = "partial correlation network",
+       theme = "colorblind",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+
+
+
+bootnetgraph <- plot(determinants_bootnet, 
+                     edge.labels = TRUE, 
+                     layout = avlayout, 
+                     title = "partial correlation network, with LASSO regularisation and EBIC model selection",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+```
+
+# Self-reported PA
+
+```{r determinants, include = FALSE, eval = FALSE}
+
+data <- df %>% 
+  dplyr::select(
+    # "PA" = paAccelerometer_diff,
+    "PA selfrep" = padaysLastweek_diff,
+    "planning" = PA_actCop_diff,
+    "BCT" = PA_frqbct_diff, 
+    "amotivation" = PA_amotivation_diff,
+    "autonomous" = PA_autonomous_diff, 
+    "controlled" = PA_controlled_diff, 
+    "descriptive norm" = PA_dnorm_diff,
+    "injunctive norm" = PA_inorm_diff,
+    "intention" = PA_intention_diff, 
+    "outcome expectations" = PA_outcomeExpectations_diff, 
+    "opportunities" = PA_opportunities_diff, 
+    "self-efficacy PBC" = PA_sePbc_diff) %>% 
+  mutate_all(funs(as.numeric(.))) 
+
+data %>% summarise_all(funs(sd = sd(., na.rm = TRUE)))
+
+covMatrix <- data %>% cov(use = "pairwise.complete.obs")
+
+# Transform the matrix so, that lower diagonal of the matrix shows partial correlations,
+# while the upper one shows bivariate correlations.
+matrix_corLower_parcorUpper <- covMatrix %>% ggm::correlations()
+
+# Show the matrix
+matrix_corLower_parcorUpper %>% papaja::apa_table(caption = "Correlation matrix of hypothesised determinants. Upper diagonal shows bivariate correlations, lower diagonal shows partial correlations")
+
+# Plot the matrix as a correlogram
+matrix_corLower_parcorUpper %>% corrgram::corrgram(
+  type = "cor",
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.pie,
+  main = "Bivariate (upper diagonal) and partial (lower diagonal)\ncorrelations of PA determinant changes")
+
+### GGM:
+
+determinants_bootnet <- bootnet::estimateNetwork(data, default="EBICglasso")
+
+bootnetgraph <- plot(determinants_bootnet, edge.labels = TRUE, labels = names(data), label.scale = FALSE,
+       title = "partial correlation network, with LASSO regularisation and EBIC model selection")
+
+corgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "cor",
+       labels = names(data),
+       label.scale = FALSE,
+       edge.labels = TRUE, 
+       title = "bivariate correlation network")
+
+pcorgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "pcor",
+       labels = names(data),
+       label.scale = FALSE,
+       edge.labels = TRUE, 
+       title = "partial correlation network")
+
+# Average the layout and plot all according to that
+avlayout <- qgraph::averageLayout(bootnetgraph, corgraph, pcorgraph)
+
+corgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "cor",
+       labels = names(data),
+       edge.labels = TRUE, 
+       layout = avlayout, 
+       title = "bivariate correlation network",
+       theme = "colorblind",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+
+# To help with visual comparison, that last argument takes the maximum edge of the three 
+# graphs and places that as the benchmark for the thickest line in all plots.
+
+pcorgraph <- qgraph::qgraph(qgraph::cor_auto(data), graph = "pcor",
+       labels = names(data),
+       edge.labels = TRUE, 
+       layout = avlayout,
+       title = "partial correlation network",
+       theme = "colorblind",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+
+
+
+bootnetgraph <- plot(determinants_bootnet, 
+                     edge.labels = TRUE, 
+                     layout = avlayout, 
+                     title = "partial correlation network, with LASSO regularisation and EBIC model selection",
+       maximum = max(c(bootnetgraph$graph$Graph$maximum,
+                     pcorgraph$graph$Graph$maximum, 
+                     corgraph$graph$Graph$maximum)),
+       label.scale = FALSE)
+```
+
+### Centrality and stability
+
+```{r determinants-change-stability}
+
+determinants_centralityPlot <- qgraph::centralityPlot(bootnetgraph)
+
+qgraph::centralityPlot(bootnetgraph, 
+               include = c("Strength", "ExpectedInfluence"),
+               orderBy = "ExpectedInfluence")
+
+qgraph::centrality(bootnetgraph)$InDegree
+scale(qgraph::centrality(bootnetgraph)$InDegree)
+qgraph::centrality(bootnetgraph)$Closeness
+qgraph::centrality(bootnetgraph)$Betweenness
+
+cor(qgraph::centrality(bootnetgraph)$InDegree, qgraph::centrality(bootnetgraph)$Betweenness, 
+    method = "spearman") 
+
+# bootnet_stability_determinants <- bootnet::bootnet(determinants_bootnet, nBoots=1000)
+# save(bootnet_stability_determinants, file = "bootnet_stability_determinants_change.Rdata")
+load("bootnet_stability_determinants_change.Rdata")
+
+plot(bootnet_stability_determinants, labels = TRUE, order = "sample") 
+plot(bootnet_stability_determinants, "edge", plot = "difference", onlyNonZero = TRUE, order = "sample")
+
+# bootnet_centrality_stability_determinants <- bootnet::bootnet(determinants_bootnet, nBoots=1000,nCores=8, type="case")
+# save(bootnet_centrality_stability_determinants, file = "bootnet_centrality_stability_determinants_change.Rdata")
+load("bootnet_centrality_stability_determinants_change.Rdata")
+
+plot(bootnet_centrality_stability_determinants)
+plot(bootnet_centrality_stability_determinants, perNode=T, "strength")
+
+bootnet::corStability(bootnet_centrality_stability_determinants)
+```
+
+
+
+## Negative bivariate correlation between MVPA and determinants
+
+Changes in accelerometer-measured MVPA seem to be very slightly negatively correlated with the determinants. The correlation seems strongest in the case of intention, which we look at more closely below. Turns out, that around 10 participants in the control group are driving the effect, but indeed, in general we are not seeing a positive relationship between intention and accelerometer-measured PA.
+
+```{r}
+df %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and intention", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_intention_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "intervention group")
+
+df %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_intention_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "control group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "Nur") %>% 
+  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and intention: Practical nurse", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "HRC") %>% 
+  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and intention: HRC", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "BA") %>% 
+  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and intention: Business admin", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "IT") %>% 
+  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and intention: IT", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+lm(data = df, paAccelerometer_diff ~ PA_intention_diff + track)
+
+lm(data = df, paAccelerometer_diff ~ PA_intention_diff + track + intervention)
+
+```
+
+Looks like PA change is affected by track, but the relationship between PA and intention is not. 
+
+```{r}
+df %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "intervention group")
+
+df %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "control group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "Nur") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: Practical nurse", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "HRC") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: HRC", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "BA") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: Business admin", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+df %>% 
+  dplyr::filter(intervention == "1", track == "IT") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
+  geom_smooth(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: IT", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+lm(data = df, paAccelerometer_diff ~ PA_autonomous_diff + track)
+
+lm(data = df, paAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
+```
+
+We see the same effect for autonomous motivation above. One explanation for the zero-to-negative correlation could be, that those who are initially high in PA will regress to the mean (a lower value), whereas those who are initially low, will increase their PA. Same would go for motivation, and if PA shows more fluctuation than motivation, these would seem independent instead of positively correlated. So, only those with moderate T1 values in both PA and Autonomous would be expected to show a correlated increase or decrease. To an extent (and especially in the intervention group), this is what we see when we only retain the middle x% of observations on both of the T1 values, i.e. the median plus/minus x%. 
+
+```{r middleperc-plot}
+
+correlation_from_middle_x_percent <- function(i) {
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1) %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+
+correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
+ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[1]
+ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[2]
+
+result <- list(correlation = correlation, ci_low = ci_low, ci_high = ci_high)
+
+return(result)
+}
+
+# Create empty vectors to be filled with the for loop
+correlations <- NA
+ci_lows <- NA
+ci_highs <- NA
+retained_percentage <- NA
+
+for (i in ((10:90))){
+correlations[i] <- correlation_from_middle_x_percent(i/100/2)$correlation
+ci_lows[i] <- correlation_from_middle_x_percent(i/100/2)$ci_low
+ci_highs[i] <- correlation_from_middle_x_percent(i/100/2)$ci_high
+retained_percentage[i] <- i/100
+}
+
+data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>% 
+  ggplot(aes(x = retained_percentage * 100, y = correlations)) + 
+  geom_line(size = 1.15) +
+  geom_point(size = 1.15) +
+  geom_line(aes(y = ci_lows), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_line(aes(y = ci_highs), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(x = "middle x percentage retained",
+       title =  expression("Correlations between "~Delta~"-autonomous and "~Delta~"-accelerometer-MVPA"), 
+       caption = "Only the middle quantile of T1 values as indicated by the x-axis is retained") +
+  scale_x_continuous(breaks = seq(0, 100, by = 10))
+
+
+```
+
+The same idea does not work for all variables, see self-efficacy and perceived behavioural control sumscore, for example:
+
+```{r middleperc-sepbc-plot}
+
+correlation_from_middle_x_percent <- function(i) {
+data_moderate_PA_and_sePbc <- df %>% 
+  dplyr::mutate(moderate_PA_sePbc = ifelse(test = 
+      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$PA_sePbc_T1 >= quantile(df$PA_sePbc_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$PA_sePbc_T1 <= quantile(df$PA_sePbc_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_sePbc == 1) %>% 
+  dplyr::select(paAccelerometer_diff, PA_sePbc_diff)
+
+correlation <- cor(data_moderate_PA_and_sePbc, use = "pairwise.complete.obs", method = "kendall")[1, 2]
+ci_low <- cor.test(data_moderate_PA_and_sePbc$paAccelerometer_diff, 
+                   data_moderate_PA_and_sePbc$PA_sePbc_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[1]
+ci_high <- cor.test(data_moderate_PA_and_sePbc$paAccelerometer_diff, 
+                   data_moderate_PA_and_sePbc$PA_sePbc_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[2]
+
+result <- list(correlation = correlation, ci_low = ci_low, ci_high = ci_high)
+
+return(result)
+}
+
+# Create empty vectors to be filled with the for loop
+correlations <- NA
+ci_lows <- NA
+ci_highs <- NA
+retained_percentage <- NA
+
+for (i in ((10:90))){
+correlations[i] <- correlation_from_middle_x_percent(i/100/2)$correlation
+ci_lows[i] <- correlation_from_middle_x_percent(i/100/2)$ci_low
+ci_highs[i] <- correlation_from_middle_x_percent(i/100/2)$ci_high
+retained_percentage[i] <- i/100
+}
+
+data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>% 
+  ggplot(aes(x = retained_percentage * 100, y = correlations)) + 
+  geom_line(size = 1.15) +
+  geom_point(size = 1.15) +
+  geom_line(aes(y = ci_lows), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_line(aes(y = ci_highs), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(x = "middle x percentage retained",
+       title =  expression("Correlations between "~Delta~"-sePbc and "~Delta~"-accelerometer-MVPA"), 
+       caption = "Only the middle quantile of T1 values as indicated by the x-axis is retained") +
+  scale_x_continuous(breaks = seq(0, 100, by = 10))
+
+```
+
+```{r lowerperc-plot}
+
+correlation_from_middle_x_percent <- function(i) {
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+      # df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      # df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1) %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+
+correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
+ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[1]
+ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[2]
+
+result <- list(correlation = correlation, ci_low = ci_low, ci_high = ci_high)
+
+return(result)
+}
+
+# Create empty vectors to be filled with the for loop
+correlations <- NA
+ci_lows <- NA
+ci_highs <- NA
+retained_percentage <- NA
+
+for (i in ((10:90))){
+correlations[i] <- correlation_from_middle_x_percent(i/100/2)$correlation
+ci_lows[i] <- correlation_from_middle_x_percent(i/100/2)$ci_low
+ci_highs[i] <- correlation_from_middle_x_percent(i/100/2)$ci_high
+retained_percentage[i] <- i/100
+}
+
+data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>% 
+  ggplot(aes(x = retained_percentage * 100, y = correlations)) + 
+  geom_line(size = 1.15) +
+  geom_point(size = 1.15) +
+  geom_line(aes(y = ci_lows), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_line(aes(y = ci_highs), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(x = "% of highest T1 scores retained",
+       title = expression("Correlations between "~Delta~"autonomous motivation and "~Delta~"accelerometer-MVPA")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 10))
+
+
+```
+
+
+```{r higherperc-plot}
+
+correlation_from_middle_x_percent <- function(i) {
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      # df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]],
+      # df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1) %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+
+correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
+ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[1]
+ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+                   data_moderate_PA_and_autonomous$PA_autonomous_diff, 
+                   method = "pearson", conf.level = 0.95)$conf.int[2]
+
+result <- list(correlation = correlation, ci_low = ci_low, ci_high = ci_high)
+
+return(result)
+}
+
+# Create empty vectors to be filled with the for loop
+correlations <- NA
+ci_lows <- NA
+ci_highs <- NA
+retained_percentage <- NA
+
+for (i in ((10:90))){
+correlations[i] <- correlation_from_middle_x_percent(i/100/2)$correlation
+ci_lows[i] <- correlation_from_middle_x_percent(i/100/2)$ci_low
+ci_highs[i] <- correlation_from_middle_x_percent(i/100/2)$ci_high
+retained_percentage[i] <- i/100
+}
+
+data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>% 
+  ggplot(aes(x = retained_percentage * 100, y = correlations)) + 
+  geom_line(size = 1.15) +
+  geom_point(size = 1.15) +
+  geom_line(aes(y = ci_lows), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_line(aes(y = ci_highs), linetype = "dashed", color = "darkgrey", size = 1.15) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(x = "% of lowest T1 scores retained",
+       title =  expression("Correlations between "~Delta~"autonomous motivation and "~Delta~"accelerometer-MVPA")) +
+  scale_x_continuous(breaks = seq(0, 100, by = 10))
+
+
+```
+
+### Middle 70%
+
+```{r}
+quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)
+quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)
+
+
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[2]] &
+    df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1)
+
+cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 70%: intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 70%: control group")
+
+```
+
+### Middle 60%
+
+```{r}
+quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)
+quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)
+
+
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[2]] &
+    df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1)
+
+cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 60%: intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 60%: control group")
+
+```
+
+### Middle 50%
+
+```{r}
+quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)
+quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)
+
+
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[2]] &
+    df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1)
+
+cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 50%: intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 50%: control group")
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1", track == "Nur") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: Practical nurse", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1", track == "HRC") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: HRC", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1", track == "BA") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "BA")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: Business admin", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1", track == "IT") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "IT")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous: IT", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+lm(data = data_moderate_PA_and_autonomous, paAccelerometer_diff ~ PA_autonomous_diff + track)
+
+lm(data = data_moderate_PA_and_autonomous, paAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
+```
+
+### middle 40%
+
+```{r}
+quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)
+quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)
+
+
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[2]] &
+    df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1)
+
+cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 40%: intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 40%: control group")
+
+```
+
+### middle 30%
+
+```{r}
+quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)
+quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)
+
+
+data_moderate_PA_and_autonomous <- df %>% 
+  dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
+    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[1]] &
+      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[2]] &
+    df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[1]] &
+      df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[2]],
+    yes = 1, no = 0)) %>% 
+  dplyr::filter(moderate_PA_autonomous == 1)
+
+cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
+
+data_moderate_PA_and_autonomous %>% 
+  dplyr::filter(intervention == "1") %>% 
+  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  geom_point(color = "blue") + 
+  geom_smooth(method = "loess", fill = "blue") +
+  geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
+  geom_smooth(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red", fill = "red", method = "loess" ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Differences in accelerometer-measured PA and autonomous", 
+       caption = "Legend: red for control group, blue for intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 30%: intervention group")
+
+data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
+  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  corrgram::corrgram(
+  lower.panel = corrgram::panel.pie,
+  upper.panel = corrgram::panel.conf,
+  main = "Middle 30%: control group")
+
+```
+
+# Mean differences across variables
+
+```{r meandiffs}
+
+meandiffs <- df %>% select(contains("diff"), -contains("Difficulty"), -contains("Accelerometer"), -contains("sitBreaks"), intervention) %>% 
+  mutate_at(vars(-intervention), funs(scale(.))) %>% # All variables except intervention to the same scale
+  group_by(intervention) %>% 
+  summarise_all(funs(mean(., na.rm = TRUE))) %>%
+  mutate(intervention = ifelse(intervention == 0, "control", "intervention")) %>% 
+  filter(!is.na(intervention)) %>% 
+  gather(variable, value, -intervention) %>% 
+  spread(intervention, value) %>%
+  mutate(meandiff = intervention - control,
+         absmeandiff = abs(meandiff)) %>% 
+  arrange(desc(absmeandiff))
+
+DT::datatable(meandiffs)
+
+meandiffs %>% ggplot(aes(x = absmeandiff)) +
+  geom_density()
+
+```
+
+# Distribution fits
+
+For the absolute-value distributions of accelerometer-measured outcome variables, Gamma, Weibull and Lognormal distributions seem reasonable. For the raw values, perhaps Logistic. 
+
+We can rule out Normal for the kurtosis is too large.
+
+```{r distribution-fits}
+# See here for the following stuff: https://stats.stackexchange.com/questions/132652/how-to-determine-which-distribution-fits-my-data-best
+# For the Cullen and Frey graph, this helps: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/paper2JSS.pdf
+# Not sure what happens with raw values, as Weibull assumes non-negatives. Those hence commented out.
+
+# fitdist_input <- df %>% dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector()
+# attributes(fitdist_input) <- NULL
+# fitdist_input <- fitdist_input[[1]]
+# fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+# mtext("Raw values of differences in accelerometer-measured MVPA", padj = 6, side = 1)
+
+fitdist_input <- df %>% dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+attributes(fitdist_input) <- NULL
+fitdist_input <- fitdist_input[[1]]
+fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+mtext("Absolute values of differences in accelerometer-measured MVPA", padj = 6, side = 1)
+
+fitdist_input <- df %>% 
+  dplyr::filter(intervention == 1) %>% 
+  dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+attributes(fitdist_input) <- NULL
+fitdist_input <- fitdist_input[[1]]
+fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+mtext("Absolute values of differences in accelerometer-measured MVPA: Intervention group", padj = 6, side = 1)
+
+fitdist_input <- df %>% 
+  dplyr::filter(intervention == 0) %>% 
+  dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+attributes(fitdist_input) <- NULL
+fitdist_input <- fitdist_input[[1]]
+fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+mtext("Absolute values of differences in accelerometer-measured MVPA: Control group", padj = 6, side = 1)
+
+# fitdist_input <- df %>% dplyr::select(sitLieAccelerometer_diff) %>% na.omit(.) %>% as.vector()
+# attributes(fitdist_input) <- NULL
+# fitdist_input <- fitdist_input[[1]]
+# fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+# mtext("Raw values of differences in accelerometer-measured sedentary time", padj = 6, side = 1)
+
+fitdist_input <- df %>% dplyr::select(sitLieAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+attributes(fitdist_input) <- NULL
+fitdist_input <- fitdist_input[[1]]
+fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+mtext("Absolute values of differences in accelerometer-measured sedentary time", padj = 6, side = 1)
+
+# fitdist_input <- df %>% dplyr::select(sitBreaks_diff) %>% na.omit(.) %>% as.vector()
+# attributes(fitdist_input) <- NULL
+# fitdist_input <- fitdist_input[[1]]
+# fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+# mtext("Raw values of differences in accelerometer-measured interruptions to sitting", padj = 6, side = 1)
+
+fitdist_input <- df %>% dplyr::select(sitBreaks_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+attributes(fitdist_input) <- NULL
+fitdist_input <- fitdist_input[[1]]
+fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
+mtext("Absolute values of differences in accelerometer-measured interruptions to sitting", padj = 6, side = 1)
+
+# Due to the bounded values on self-report scales, this exercise may not make much sense for self-report variables.
+
+# fitdistrplus::descdist(meandiffs$absmeandiff, discrete = FALSE, boot = 1000)
+# fitdistrplus::descdist(meandiffs$meandiff, discrete = FALSE, boot = 1000)
+#   
+# meandiffs_norm <- meandiffs$absmeandiff %>% fitdistrplus::fitdist(., "norm")
+# plot(meandiffs_norm)
+# meandiffs_norm$aic
+# 
+# meandiffs_lnorm <- meandiffs$absmeandiff %>% fitdistrplus::fitdist(., "lnorm")
+# plot(meandiffs_lnorm)
+# meandiffs_lnorm$aic
+# 
+# meandiffs_weibull <- meandiffs$absmeandiff %>% fitdistrplus::fitdist(., "weibull")
+# plot(meandiffs_weibull)
+# meandiffs_weibull$aic
+# 
+# meandiffs_beta <- meandiffs$absmeandiff %>% fitdistrplus::fitdist(., "beta")
+# plot(meandiffs_beta)
+# meandiffs_beta$aic
+```
+
+# Linear models for nonlinear processes
+
+```{r}
+r <- 2.5
+x <- 0.2
+N <- 500
+M <- 100
+
+LogisticMap <- function(r, x, N, M){
+  # r: bifurcation parameter
+  # x: initial value
+  # N: Number of iteration
+  # M: Number of iteration points to be returned
+  z <- 1:N
+  z[1] <- x
+  for(i in c(1:(N-1))){
+    z[i+1] <- r *z[i]  * (1 - z[i])
+    }
+  # Return the last M iterations 
+  z[c((N-M):N)]
+  }
+
+maps <- data.frame(
+    "intervention" = LogisticMap(r = 3.9, x = 0.5, N = 400, M = 400) * 100,
+    "control" = LogisticMap(r = 3.9, x = 0.4, N = 400, M = 400) * 100)
+
+# Change up a few points to make it look like there's something there
+maps$intervention[110] <- 25
+maps$intervention[310] <- 75
+maps$intervention[320] <- 80
+maps$intervention[330] <- 75
+
+maps <- maps %>% dplyr::mutate(
+  day = 1:400,
+  movingAverage_intervention = zoo::rollmean(maps$intervention, 7, fill = NA, align = "right"),
+  movingAverage_control = zoo::rollmean(maps$control, 7, fill = NA, align = "right"),
+  # if there are 0 decimals when dividing day by 10, include point:
+  every10th_intervention = ifelse(day %% 10 == 0, intervention, NA),
+  every10th_control = ifelse(day %% 10 == 0, control, NA)) 
+
+
+# Data frame containing only three points, to create regression lines in the plot:
+data2 <- data.frame(y = c(maps$every10th_intervention[10], 
+                          maps$every10th_intervention[200],
+                          maps$every10th_intervention[390]),
+                    x = c(10, 200, 390))
+
+data3 <- data.frame(y = c(maps$every10th_intervention[60], 
+                          maps$every10th_intervention[210],
+                          maps$every10th_intervention[380]),
+                    x = c(60, 210, 380))
+
+data_pointhighlights <- data.frame(
+  y = maps$every10th_intervention[c(60, 70, 80, 90, 100, 110, 120, 130, 140, 300, 310, 320, 330, 340)],
+  x = c(60, 70, 80, 90, 100, 110, 120, 130, 140, 300, 310, 320, 330, 340))
+
+nonlinplot_a <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  # geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+  #           aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  # geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+  #         aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = NULL) +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100)) +
+  labs(title = "A)") +
+  xlab(NULL)
+
+  
+nonlinplot_b <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  # geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+  #           aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  # geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+  #         aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  geom_point(aes(x = 60, y = maps$every10th_intervention[60]), color = "blue", size = 2) +
+  geom_point(aes(x = 210, y = maps$every10th_intervention[210]), color = "blue", size = 2) +
+  geom_point(aes(x = 380, y = maps$every10th_intervention[380]), color = "blue", size = 2) +
+  geom_smooth(data = data3, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "blue", linetype = "dashed") +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = NULL) +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100)) +
+  labs(title = "B)") +
+  xlab(NULL)
+
+  
+nonlinplot_c <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+            aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "longdash", size = 0.5) +
+  geom_point(aes(x = 60, y = maps$every10th_intervention[60]), color = "blue", size = 2) +
+  geom_point(aes(x = 210, y = maps$every10th_intervention[210]), color = "blue", size = 2) +
+  geom_point(aes(x = 380, y = maps$every10th_intervention[380]), color = "blue", size = 2) +
+  geom_smooth(data = data3, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "blue", linetype = "longdash", size = 0.5) +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100)) +
+  labs(title = "C)") +
+  xlab(NULL)
+
+nonlinplot_d <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+            aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  geom_smooth(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), method = "loess", span = 0.6, size = 0.6) +
+  geom_smooth(data = maps[!is.na(maps$every10th_intervention), ], 
+        aes(x = day, y = every10th_intervention), method = "lm", linetype = "dashed", color = "blue", size = 0.6, fill = NA) +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  # geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  # geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  # geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  # geom_smooth(data = data2, aes(x = x, y = y), 
+  #             method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  # papaja::theme_apa() + 
+  scale_y_continuous(name = NULL) +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100)) +
+  geom_point(data = data_pointhighlights, aes(x = x, y = y), shape = 1, color = "red", size = 3.5) +
+  labs(title = "D)") +
+  xlab(NULL)
+
+nonlinplot_e <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(color = "darkgrey", size = 0.5) +
+  geom_point(color = "blue", size = 0.8) +
+  geom_smooth(method = "loess") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  # geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  # geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  # geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  # geom_smooth(data = data2, aes(x = x, y = y), 
+  #             method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  # papaja::theme_apa() + 
+  scale_y_continuous(name = NULL) +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100)) +
+  geom_point(data = data_pointhighlights, aes(x = x, y = y), shape = 1, color = "red", size = 3.5) +
+  labs(title = "E)")
+
+# Patchwork syntax for composite plot
+fullplot <- 
+((nonlinplot_a | nonlinplot_b) / 
+ (nonlinplot_c | nonlinplot_d) / 
+    nonlinplot_e)
+
+ggsave("nonlinplot.jpg", fullplot, width = 8.5, height = 11)
+
+sum(!is.na(maps$every10th_intervention))
+```
+

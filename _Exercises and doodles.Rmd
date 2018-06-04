@@ -23,6 +23,41 @@ knitr::opts_chunk$set(echo = TRUE,
 knitr::opts_knit$set(root.dir = ".")
 ```
 
+Distribution with two means
+
+```{r}
+people1 <- rnorm(200, mean = 20, sd = 3)
+people2 <- rnorm(200, mean = 17, sd = 10)
+people3 <- rcauchy(200, location = 17, scale = 3)
+
+data.frame(id = 1:150, value = c(people1, people2, people3)) %>% 
+  ggplot(aes(x = value)) +
+  geom_density() +
+  coord_cartesian(xlim = c(-50, 50)) +
+  papaja::theme_apa()
+
+people1 <- rnorm(200, mean = 10, sd = 3)
+people2 <- rnorm(200, mean = -10, sd = 10)
+
+data.frame(id = 1:200, value = c(people1)) %>% 
+  ggplot(aes(x = value)) +
+  geom_density(fill = "blue", alpha = 0.6) +
+  geom_density(data = data.frame(id = 1:200, value = c(people2)), fill = "green", alpha = 0.6) +
+  coord_cartesian(xlim = c(-50, 50)) +
+  papaja::theme_apa()
+```
+```{r}
+data.frame(value = c(0.12, 0.81, 1, 2, 3, 5, 5, 5, 5, 5, 5, 6, 7, 10, 10, 14, 20, 25, 30, 30, 30, 30, 40, 40, 40, 49, 50, 5, 5, 10, 5, 2, 15, 0.81, 30, 5, 1, 1, 0, 0.81, 6, 0, 0, 50, 30, 10, 0.0081, 3.25, 5, 40, 4, 3, 15, 15, 10, 0.0081, 3, 35, 0.05, 7, 5, 5, 8, 30, 1, 30, 25, 30, 5, 0.3)) %>% 
+  ggplot(aes(x = value)) +
+  # geom_density() +
+  geom_histogram(binwidth = 0.05) +
+  # coord_cartesian(xlim = c(-50, 50)) +
+  # papaja::theme_apa() +
+  labs(y = "count", x = "percentage of \"average\" participants in data")
+  
+```
+
+
 ```{r, eval = FALSE}
 r <- 2.5
 x <- 0.2
@@ -38,22 +73,29 @@ LogisticMap <- function(r, x, N, M){
   z[1] <- x
   for(i in c(1:(N-1))){
     z[i+1] <- r *z[i]  * (1 - z[i])
-  , eval = FALSE}
+    }
   # Return the last M iterations 
   z[c((N-M):N)]
-, eval = FALSE}
+  }
 
 maps <- data.frame(
     "intervention" = LogisticMap(r = 3.9, x = 0.5, N = 400, M = 400) * 100,
     "control" = LogisticMap(r = 3.9, x = 0.4, N = 400, M = 400) * 100)
 
+# Change up a few points to make it look like there's something there
+maps$intervention[110] <- 25
+maps$intervention[310] <- 75
+maps$intervention[320] <- 80
+maps$intervention[330] <- 75
+
 maps <- maps %>% dplyr::mutate(
   day = 1:400,
-  movingAverage_intervention = rollmean(maps$intervention, 7, fill = NA, align = "right"),
-  movingAverage_control = rollmean(maps$control, 7, fill = NA, align = "right"),
+  movingAverage_intervention = zoo::rollmean(maps$intervention, 7, fill = NA, align = "right"),
+  movingAverage_control = zoo::rollmean(maps$control, 7, fill = NA, align = "right"),
   # if there are 0 decimals when dividing day by 10, include point:
   every10th_intervention = ifelse(day %% 10 == 0, intervention, NA),
   every10th_control = ifelse(day %% 10 == 0, control, NA)) 
+
 
 # Data frame containing only three points, to create regression line in the plot:
 data2 <- data.frame(y = c(maps$every10th_intervention[10], 
@@ -61,6 +103,61 @@ data2 <- data.frame(y = c(maps$every10th_intervention[10],
                           maps$every10th_intervention[390]),
                     x = c(10, 200, 390))
 
+data3 <- data.frame(y = c(maps$every10th_intervention[60], 
+                          maps$every10th_intervention[210],
+                          maps$every10th_intervention[380]),
+                    x = c(60, 210, 380))
+
+
+
+maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  # geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+  #           aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  # geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+  #         aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
+
+  
+maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  # geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+  #           aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  # geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+  #         aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  geom_point(aes(x = 60, y = maps$every10th_intervention[60]), color = "blue", size = 2) +
+  geom_point(aes(x = 210, y = maps$every10th_intervention[210]), color = "blue", size = 2) +
+  geom_point(aes(x = 380, y = maps$every10th_intervention[380]), color = "blue", size = 2) +
+  geom_smooth(data = data3, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "blue", linetype = "dashed") +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
+  
 maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
   # geom_line(colour = "grey") + 
   # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
@@ -70,7 +167,7 @@ maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
             aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
   geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
           aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
-  geom_smooth(method = "lm") +
+  # geom_smooth(method = "lm") +
   # geom_line(data = maps[!is.na(maps$every10th_control), ],
   #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
   geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
@@ -82,6 +179,72 @@ maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
   scale_y_continuous(name = "Percentage of max motivation") +
   coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
   
+maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+            aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  # geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  geom_smooth(data = data2, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  geom_point(aes(x = 60, y = maps$every10th_intervention[60]), color = "blue", size = 2) +
+  geom_point(aes(x = 210, y = maps$every10th_intervention[210]), color = "blue", size = 2) +
+  geom_point(aes(x = 380, y = maps$every10th_intervention[380]), color = "blue", size = 2) +
+  geom_smooth(data = data3, aes(x = x, y = y), 
+              method = "lm", se = FALSE, color = "blue", linetype = "dashed") +
+  papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
+
+maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(data = maps[!is.na(maps$every10th_intervention), ], 
+            aes(x = day, y = every10th_intervention), color = "darkgrey", size = 0.75) +
+  geom_point(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), color = "blue", size = 0.8) +
+  geom_smooth(data = maps[!is.na(maps$every10th_intervention), ], 
+          aes(x = day, y = every10th_intervention), method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  # geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  # geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  # geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  # geom_smooth(data = data2, aes(x = x, y = y), 
+  #             method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  # papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
+
+maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
+  # geom_line(colour = "grey") + 
+  # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
+  # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
+  # Plot every 10th point, ignoring the fact that there are missings in between:
+  geom_line(color = "darkgrey", size = 0.5) +
+  geom_point(color = "blue", size = 0.8) +
+  geom_smooth(method = "lm") +
+  # geom_line(data = maps[!is.na(maps$every10th_control), ],
+  #          aes(x = day, y = every10th_control), colour = "red", size = 0.75, linetype = "dashed") +
+  # geom_point(aes(x = 10, y = maps$every10th_intervention[10]), color = "red", size = 2) +
+  # geom_point(aes(x = 200, y = maps$every10th_intervention[200]), color = "red", size = 2) +
+  # geom_point(aes(x = 390, y = maps$every10th_intervention[390]), color = "red", size = 2) +
+  # geom_smooth(data = data2, aes(x = x, y = y), 
+  #             method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  # papaja::theme_apa() + 
+  scale_y_continuous(name = "Percentage of max motivation") +
+  coord_cartesian(xlim = c(0, 400), ylim = c(0, 100))
 
 ```
 
