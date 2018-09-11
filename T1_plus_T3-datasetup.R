@@ -1,6 +1,6 @@
 
 # To start data analysis, we set up the basics to enable compiling the document:
-  
+
 ## Remember to tell R where your packages are.
 # .libPaths("C:/rlibs/3.4.2")
 
@@ -8,11 +8,12 @@
 if (!require(pacman)) install.packages("pacman")
 #library(pacman)
 
-
-
 CRANpacks <- c("viridis", "bookdown", "knitr", "tidyverse", "haven", "lme4", 
-               "userfriendlyscience", "devtools", "corrgram", "sjPlot", "DT",
-               "lavaan", "ggplot2", "reshape2", "semPlot", "fitdistrplus") 
+               "userfriendlyscience", "sm", "sjstats", "gridExtra", "igraph", 
+               "devtools","EstimateGroupNetwork", "bootnet", "qgraph","rstanarm",
+               "brms", "mlmRev", "rstan", "sandwich", "visreg", "broom", 
+               "EstimateGroupNetwork", "bootnet", "qgraph", # for networks
+               "corrgram", "sjPlot", "DT") 
 
 instpacks <- setdiff(CRANpacks, pacman::p_library())
 
@@ -20,19 +21,21 @@ instpacks <- setdiff(CRANpacks, pacman::p_library())
 if (length(instpacks)>0) install.packages(instpacks)
 
 if (!require(papaja)) pacman::p_install_gh("crsh/papaja")
-if (!require(ggridges)) pacman::p_install_gh("clauswilke/ggridges")
-# if (!require(brmstools)) pacman::p_install_gh("mvuorre/brmstools")
-# if (!require(NetworkComparisonTest)) pacman::p_install_gh("sachaepskamp/NetworkComparisonTest")
-# if (!require(ggstatsplot)) pacman::p_install_gh("IndrajeetPatil/ggstatsplot")
+if (!require(mgm)) pacman::p_install_gh("jmbh/mgm")
+if (!require(brmstools)) pacman::p_install_gh("mvuorre/brmstools")
+if (!require(NetworkComparisonTest)) pacman::p_install_gh("sachaepskamp/NetworkComparisonTest")
+if (!require(ggstatsplot)) pacman::p_install_gh("IndrajeetPatil/ggstatsplot")
 if (!require(patchwork)) pacman::p_install_gh("thomasp85/patchwork") # so that plot1 + plot2 creates a single side-by-side plot
 
 # Packages for the figures which show Bayesian credible intervals of classes
 #pacman::p_install(c("rstanarm", "brms", "mlmRev"))
 
 pacman::p_load(knitr, tidyverse)
+# pacman::p_install_gh("clauswilke/ggridges")
+library(ggridges)
 
 knitr::opts_chunk$set(echo = TRUE, 
-                      warning = TRUE,
+                      warning = FALSE,
                       error = TRUE,
                       cache = TRUE, 
                       collapse = TRUE,
@@ -44,6 +47,7 @@ knitr::opts_chunk$set(echo = TRUE, rows.print=15)
 
 ggplot2::theme_set(papaja::theme_apa())
 
+# This is supposed to center all data table cells...
 options(DT.options = list(columnDefs = list(list(className = 'dt-center', targets = "_all"))))
 
 # Read data.
@@ -65,8 +69,9 @@ lmi <- haven::read_sav("data/LMI_data_korjattu_syntaksilla_nimetpoistettu - skan
 # pkgs <- paste('package:', pkgs, sep = "")
 # lapply(pkgs, detach, character.only = TRUE, unload = TRUE)
 
-# What seems to work is create a file .Renviron in the project root, which contains
-# 
+# What seems to work is create a file .Renviron in the project root, which contains e.g. R_MAX_NUM_DLLS = 300.
+# But better to have all code written as package::function() instead of function(), 
+# and not calling most with library(package) at all.
 
 ## Package sm modifications
 
@@ -74,160 +79,158 @@ lmi <- haven::read_sav("data/LMI_data_korjattu_syntaksilla_nimetpoistettu - skan
 
 # Changing the sm density compare function to allow different color of the band of equality. Copied from https://web.archive.org/web/20170222214214/https://stat.ethz.ch/pipermail/r-help//2009-March/416920.html.
 
-# sm.density.compare2 <- function (x, group, h, model = "none", bandcol =
-#                                    'cyan', lwd = par("lwd"), usePolyg = NULL, asp=NA, 
-#                                  xlab=opt$xlab, ylab=opt$ylab, ...) 
-# {
-#   if (!is.vector(x)) 
-#     stop("sm.density.compare can handle only 1-d data")
-#   opt <- sm:::sm.options(list(...))
-#   sm:::replace.na(opt, ngrid, 50)                 
-#   ## These all changed from replace.na() --> sm:::
-#   sm:::replace.na(opt, display, "line")
-#   sm:::replace.na(opt, xlab, deparse(substitute(x)))
-#   sm:::replace.na(opt, ylab, "Density")
-#   sm:::replace.na(opt, xlim, c(min(x) - diff(range(x))/4, max(x) + 
-#                                  diff(range(x))/4))
-#   sm:::replace.na(opt, eval.points, seq(opt$xlim[1], opt$xlim[2], 
-#                                         length = opt$ngrid))
-#   if (is.na(opt$band)) {
-#     if (model == "none") 
-#       opt$band <- FALSE
-#     else opt$band <- TRUE
-#   }
-#   if ((model == "none") && opt$band) 
-#     opt$band <- FALSE
-#   band <- opt$band
-#   ngrid <- opt$ngrid
-#   xlim <- opt$xlim
-#   nboot <- opt$nboot
-#   y <- x
-#   if (is.na(opt$test)) {
-#     if (model == "none") 
-#       opt$test <- FALSE
-#     else opt$test <- TRUE
-#   }
-#   if ((model == "none") && opt$test) 
-#     opt$test <- FALSE
-#   test <- opt$test
-#   if (opt$display %in% "none") 
-#     band <- FALSE
-#   fact <- factor(group)
-#   fact.levels <- levels(fact)
-#   nlev <- length(fact.levels)
-#   ni <- table(fact)
-#   if (band & (nlev > 2)) {
-#     cat("Reference band available to compare two groups only.", 
-#         "\n")
-#     band <- FALSE
-#   }
-#   if (length(opt$lty) < nlev) 
-#     opt$lty <- 1:nlev
-#   if (length(opt$col) < nlev) 
-#     opt$col <- 2:(nlev + 1)
-#   if (missing(h)) 
-#     h <- sm:::h.select(x, y = NA, group = group, ...)
-#   opt$band <- band
-#   opt$test <- test
-#   estimate <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-#   se <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-#   for (i in 1:nlev) {
-#     sm <- sm:::sm.density(y[fact == fact.levels[i]], h = h, display = "none", 
-#                           eval.points = opt$eval.points)
-#     estimate[i, ] <- sm$estimate
-#     se[i, ] <- sm$se
-#   }
-#   eval.points <- sm$eval.points
-#   if (!(opt$display %in% "none" | band)) {
-#     plot(xlim, c(0, 1.1 * max(as.vector(estimate))), xlab = opt$xlab, 
-#          ylab = opt$ylab, type = "n")
-#     #for (i in 1:nlev) lines(eval.points, estimate[i, ], lty = opt$lty[i], 
-#     #    col = opt$col[i])
-#     for (i in 1:nlev) lines(eval.points, estimate[i, ], lty =
-#                               opt$lty[i],   ## lwd hacked in
-#                             col = opt$col[i], lwd = lwd[i])
-#   }
-#   est <- NULL
-#   p <- NULL
-#   if (model == "equal" & test) {
-#     if (nlev == 2) {
-#       ts <- sum((estimate[1, ] - estimate[2, ])^2)
-#     }
-#     else {
-#       sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
-#                                  ngrid = opt$ngrid, display = "none")$estimate
-#       ts <- 0
-#       for (i in 1:nlev) ts <- ts + ni[i] * sum((estimate[i, 
-#                                                          ] - sm.mean)^2)
-#     }
-#     p <- 0
-#     est.star <- matrix(0, ncol = opt$ngrid, nrow = nlev)
-#     for (iboot in 1:nboot) {
-#       ind <- (1:length(y))
-#       for (i in 1:nlev) {
-#         indi <- sample((1:length(ind)), ni[i])
-#         est.star[i, ] <- sm:::sm.density(y[ind[indi]], h = h, 
-#                                          ngrid = opt$ngrid, xlim = opt$xlim, display =
-#                                            "none")$estimate
-#         ind <- ind[-indi]
-#       }
-#       if (nlev == 2) {
-#         ts.star <- sum((est.star[1, ] - est.star[2, ])^2)
-#       }
-#       else {
-#         sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
-#                                    ngrid = opt$ngrid, display = "none")$estimate
-#         ts.star <- 0
-#         for (i in 1:nlev) {
-#           ts.star <- ts.star + ni[i] * sum((est.star[i, 
-#                                                      ] - sm.mean)^2)
-#         }
-#       }
-#       if (ts.star > ts) 
-#         p <- p + 1
-#       if (opt$verbose > 1) {
-#         cat(iboot)
-#         cat(" ")
-#       }
-#     }
-#     p <- p/nboot
-#     cat("\nTest of equal densities:  p-value = ", round(p, 
-#                                                         5), "\n")
-#     est <- list(p = p, h = h)
-#   }
-#   if (model == "equal" & band) {
-#     av <- (sqrt(estimate[1, ]) + sqrt(estimate[2, ]))/2
-#     se <- sqrt(se[1, ]^2 + se[2, ]^2)
-#     upper <- (av + se)^2
-#     lower <- pmax(av - se, 0)^2
-#     plot(xlim, c(0, 1.1 * max(as.vector(estimate), upper)), 
-#          xlab = xlab, ylab = ylab, type = "n", asp=asp, ...)     
-#     ## ... and asp added; was opt$xlab and opt$ylab
-#     polygon(c(eval.points, rev(eval.points)), c(upper, rev(lower)), 
-#             col = bandcol, border = 0)                                      
-#     ## was col = "cyan"
-#     if (is.null(usePolyg)) {
-#       lines(eval.points, estimate[1, ], lty = opt$lty[1], col =
-#               opt$col[1], lwd = lwd[1])
-#       lines(eval.points, estimate[2, ], lty = opt$lty[2], col =
-#               opt$col[2], lwd = lwd[2])
-#     }
-#     else {
-#       polygon(eval.points, estimate[1, ], lty = opt$lty[1], col =
-#                 opt$col[1], lwd = lwd[1])
-#       polygon(eval.points, estimate[2, ], lty = opt$lty[2], col =
-#                 opt$col[2], lwd = lwd[2])
-#     }
-#     est <- list(p = p, upper = upper, lower = lower, h = h)
-#   }
-#   invisible(est)
-# }
+sm.density.compare2 <- function (x, group, h, model = "none", bandcol =
+                                   'cyan', lwd = par("lwd"), usePolyg = NULL, asp=NA, 
+                                 xlab=opt$xlab, ylab=opt$ylab, ...) 
+{
+  if (!is.vector(x)) 
+    stop("sm.density.compare can handle only 1-d data")
+  opt <- sm:::sm.options(list(...))
+  sm:::replace.na(opt, ngrid, 50)                 
+  ## These all changed from replace.na() --> sm:::
+  sm:::replace.na(opt, display, "line")
+  sm:::replace.na(opt, xlab, deparse(substitute(x)))
+  sm:::replace.na(opt, ylab, "Density")
+  sm:::replace.na(opt, xlim, c(min(x) - diff(range(x))/4, max(x) + 
+                                 diff(range(x))/4))
+  sm:::replace.na(opt, eval.points, seq(opt$xlim[1], opt$xlim[2], 
+                                        length = opt$ngrid))
+  if (is.na(opt$band)) {
+    if (model == "none") 
+      opt$band <- FALSE
+    else opt$band <- TRUE
+  }
+  if ((model == "none") && opt$band) 
+    opt$band <- FALSE
+  band <- opt$band
+  ngrid <- opt$ngrid
+  xlim <- opt$xlim
+  nboot <- opt$nboot
+  y <- x
+  if (is.na(opt$test)) {
+    if (model == "none") 
+      opt$test <- FALSE
+    else opt$test <- TRUE
+  }
+  if ((model == "none") && opt$test) 
+    opt$test <- FALSE
+  test <- opt$test
+  if (opt$display %in% "none") 
+    band <- FALSE
+  fact <- factor(group)
+  fact.levels <- levels(fact)
+  nlev <- length(fact.levels)
+  ni <- table(fact)
+  if (band & (nlev > 2)) {
+    cat("Reference band available to compare two groups only.", 
+        "\n")
+    band <- FALSE
+  }
+  if (length(opt$lty) < nlev) 
+    opt$lty <- 1:nlev
+  if (length(opt$col) < nlev) 
+    opt$col <- 2:(nlev + 1)
+  if (missing(h)) 
+    h <- sm:::h.select(x, y = NA, group = group, ...)
+  opt$band <- band
+  opt$test <- test
+  estimate <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+  se <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+  for (i in 1:nlev) {
+    sm <- sm:::sm.density(y[fact == fact.levels[i]], h = h, display = "none", 
+                          eval.points = opt$eval.points)
+    estimate[i, ] <- sm$estimate
+    se[i, ] <- sm$se
+  }
+  eval.points <- sm$eval.points
+  if (!(opt$display %in% "none" | band)) {
+    plot(xlim, c(0, 1.1 * max(as.vector(estimate))), xlab = opt$xlab, 
+         ylab = opt$ylab, type = "n")
+    #for (i in 1:nlev) lines(eval.points, estimate[i, ], lty = opt$lty[i], 
+    #    col = opt$col[i])
+    for (i in 1:nlev) lines(eval.points, estimate[i, ], lty =
+                              opt$lty[i],   ## lwd hacked in
+                            col = opt$col[i], lwd = lwd[i])
+  }
+  est <- NULL
+  p <- NULL
+  if (model == "equal" & test) {
+    if (nlev == 2) {
+      ts <- sum((estimate[1, ] - estimate[2, ])^2)
+    }
+    else {
+      sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
+                                 ngrid = opt$ngrid, display = "none")$estimate
+      ts <- 0
+      for (i in 1:nlev) ts <- ts + ni[i] * sum((estimate[i, 
+                                                         ] - sm.mean)^2)
+    }
+    p <- 0
+    est.star <- matrix(0, ncol = opt$ngrid, nrow = nlev)
+    for (iboot in 1:nboot) {
+      ind <- (1:length(y))
+      for (i in 1:nlev) {
+        indi <- sample((1:length(ind)), ni[i])
+        est.star[i, ] <- sm:::sm.density(y[ind[indi]], h = h, 
+                                         ngrid = opt$ngrid, xlim = opt$xlim, display =
+                                           "none")$estimate
+        ind <- ind[-indi]
+      }
+      if (nlev == 2) {
+        ts.star <- sum((est.star[1, ] - est.star[2, ])^2)
+      }
+      else {
+        sm.mean <- sm:::sm.density(y, h = h, xlim = opt$xlim, 
+                                   ngrid = opt$ngrid, display = "none")$estimate
+        ts.star <- 0
+        for (i in 1:nlev) {
+          ts.star <- ts.star + ni[i] * sum((est.star[i, 
+                                                     ] - sm.mean)^2)
+        }
+      }
+      if (ts.star > ts) 
+        p <- p + 1
+      if (opt$verbose > 1) {
+        cat(iboot)
+        cat(" ")
+      }
+    }
+    p <- p/nboot
+    cat("\nTest of equal densities:  p-value = ", round(p, 
+                                                        5), "\n")
+    est <- list(p = p, h = h)
+  }
+  if (model == "equal" & band) {
+    av <- (sqrt(estimate[1, ]) + sqrt(estimate[2, ]))/2
+    se <- sqrt(se[1, ]^2 + se[2, ]^2)
+    upper <- (av + se)^2
+    lower <- pmax(av - se, 0)^2
+    plot(xlim, c(0, 1.1 * max(as.vector(estimate), upper)), 
+         xlab = xlab, ylab = ylab, type = "n", asp=asp, ...)     
+    ## ... and asp added; was opt$xlab and opt$ylab
+    polygon(c(eval.points, rev(eval.points)), c(upper, rev(lower)), 
+            col = bandcol, border = 0)                                      
+    ## was col = "cyan"
+    if (is.null(usePolyg)) {
+      lines(eval.points, estimate[1, ], lty = opt$lty[1], col =
+              opt$col[1], lwd = lwd[1])
+      lines(eval.points, estimate[2, ], lty = opt$lty[2], col =
+              opt$col[2], lwd = lwd[2])
+    }
+    else {
+      polygon(eval.points, estimate[1, ], lty = opt$lty[1], col =
+                opt$col[1], lwd = lwd[1])
+      polygon(eval.points, estimate[2, ], lty = opt$lty[2], col =
+                opt$col[2], lwd = lwd[2])
+    }
+    est <- list(p = p, upper = upper, lower = lower, h = h)
+  }
+  invisible(est)
+}
 
 # Prepare data with variables of interest
 
-# We do data manipulation and cleaning to come up with a dataaset with our variables of interests.
-
-#library(userfriendlyscience)
+# We do data manipulation and cleaning to come up with a dataset with our variables of interests.
 
 d <- lmi %>% dplyr::select(id = ID,
                            intervention = ryhma,
@@ -235,44 +238,44 @@ d <- lmi %>% dplyr::select(id = ID,
                            school = Aineisto.1,
                            girl = Kys0013.1,
                            big5agreeableness_01_T1 = Kys0155.1,
-                           big5agrReverseCoded_02_T1 = Kys0150.1,
+                           big5agreeablenessReverseCoded_02_T1 = Kys0150.1,
                            big5conscientiousness_01_T1 = Kys0151.1,
-                           big5consReverseCoded_02_T1 = Kys0156.1,
+                           big5conscientiousnessReverseCoded_02_T1 = Kys0156.1,
                            big5extraversion_01_T1 = Kys0149.1,
-                           big5extReverseCoded_02_T1 = Kys0154.1,
+                           big5extraversionReverseCoded_02_T1 = Kys0154.1,
                            big5neuroticism_01_T1 = Kys0152.1,
-                           big5neurReverseCoded_02_T1 = Kys0157.1,
+                           big5neuroticismReverseCoded_02_T1 = Kys0157.1,
                            big5openness_01_T1 = Kys0153.1,
-                           big5openReverseCoded_02_T1 = Kys0158.1,
+                           big5opennessReverseCoded_02_T1 = Kys0158.1,
                            fatpct_T1 = Rasva,
-                           PA_actCop_01_T1 = Kys0115.1,
-                           PA_actCop_01_T3 = Kys0115.3,
-                           PA_actCop_02_T1 = Kys0116.1,
-                           PA_actCop_02_T3 = Kys0116.3,
-                           PA_actCop_03_T1 = Kys0117.1,
-                           PA_actCop_03_T3 = Kys0117.3,
-                           PA_actCop_04_T1 = Kys0118.1,
-                           PA_actCop_04_T3 = Kys0118.3,
-                           PA_agrbct_01_T1 = Kys0128.1,
-                           PA_agrbct_01_T3 = Kys0128.3,
-                           PA_agrbct_02_T1 = Kys0129.1,
-                           PA_agrbct_02_T3 = Kys0129.3,
-                           PA_agrbct_03_T1 = Kys0130.1,
-                           PA_agrbct_03_T3 = Kys0130.3,
-                           PA_agrbct_04_T1 = Kys0131.1,
-                           PA_agrbct_04_T3 = Kys0131.3,
-                           PA_agrbct_05_T1 = Kys0132.1,
-                           PA_agrbct_05_T3 = Kys0132.3,
-                           PA_agrbct_06_T1 = Kys0133.1,
-                           PA_agrbct_06_T3 = Kys0133.3,
-                           PA_agrbct_07_T1 = Kys0134.1,
-                           PA_agrbct_07_T3 = Kys0134.3,
-                           PA_agrbct_08_T1 = Kys0135.1,
-                           PA_agrbct_08_T3 = Kys0135.3,
-                           PA_agrbct_09_T1 = Kys0136.1,
-                           PA_agrbct_09_T3 = Kys0136.3,
-                           PA_agrbct_10_T1 = Kys0137.1,
-                           PA_agrbct_10_T3 = Kys0137.3,
+                           # PA_actCop_01_T1 = Kys0115.1,
+                           # PA_actCop_01_T3 = Kys0115.3,
+                           # PA_actCop_02_T1 = Kys0116.1,
+                           # PA_actCop_02_T3 = Kys0116.3,
+                           # PA_actCop_03_T1 = Kys0117.1,
+                           # PA_actCop_03_T3 = Kys0117.3,
+                           # PA_actCop_04_T1 = Kys0118.1,
+                           # PA_actCop_04_T3 = Kys0118.3,
+                           PA_agreementDependentBCT_01_T1 = Kys0128.1,
+                           PA_agreementDependentBCT_01_T3 = Kys0128.3,
+                           PA_agreementDependentBCT_02_T1 = Kys0129.1,
+                           PA_agreementDependentBCT_02_T3 = Kys0129.3,
+                           PA_agreementDependentBCT_03_T1 = Kys0130.1,
+                           PA_agreementDependentBCT_03_T3 = Kys0130.3,
+                           PA_agreementDependentBCT_04_T1 = Kys0131.1,
+                           PA_agreementDependentBCT_04_T3 = Kys0131.3,
+                           PA_agreementDependentBCT_05_T1 = Kys0132.1,
+                           PA_agreementDependentBCT_05_T3 = Kys0132.3,
+                           PA_agreementDependentBCT_06_T1 = Kys0133.1,
+                           PA_agreementDependentBCT_06_T3 = Kys0133.3,
+                           PA_agreementDependentBCT_07_T1 = Kys0134.1,
+                           PA_agreementDependentBCT_07_T3 = Kys0134.3,
+                           PA_agreementDependentBCT_08_T1 = Kys0135.1,
+                           PA_agreementDependentBCT_08_T3 = Kys0135.3,
+                           PA_agreementDependentBCT_09_T1 = Kys0136.1,
+                           PA_agreementDependentBCT_09_T3 = Kys0136.3,
+                           PA_agreementDependentBCT_10_T1 = Kys0137.1,
+                           PA_agreementDependentBCT_10_T3 = Kys0137.3,
                            PA_amotivation_01_T1 = Kys0082.1,
                            PA_amotivation_01_T3 = Kys0082.3,
                            PA_amotivation_02_T1 = Kys0086.1,
@@ -281,42 +284,42 @@ d <- lmi %>% dplyr::select(id = ID,
                            PA_amotivation_03_T3 = Kys0096.3,
                            PA_amotivation_04_T1 = Kys0097.1,
                            PA_amotivation_04_T3 = Kys0097.3,
-                           PA_actCop_05_T1 = Kys0119.1,
-                           PA_actCop_05_T3 = Kys0119.3,
-                           PA_actCop_06_T1 = Kys0120.1,
-                           PA_actCop_06_T3 = Kys0120.3,
-                           PA_actCop_07_T1 = Kys0121.1,
-                           PA_actCop_07_T3 = Kys0121.3,
-                           PA_actCop_08_T1 = Kys0122.1,
-                           PA_actCop_08_T3 = Kys0122.3,
-                           PA_dnorm_02_T1 = Kys0107.1,
-                           PA_dnormparents_02_T3 = Kys0107.3,
-                           PA_dnorm_01_T1 = Kys0106.1,
-                           PA_dnorm_01_T3 = Kys0106.3,
+                           # PA_actCop_05_T1 = Kys0119.1,
+                           # PA_actCop_05_T3 = Kys0119.3,
+                           # PA_actCop_06_T1 = Kys0120.1,
+                           # PA_actCop_06_T3 = Kys0120.3,
+                           # PA_actCop_07_T1 = Kys0121.1,
+                           # PA_actCop_07_T3 = Kys0121.3,
+                           # PA_actCop_08_T1 = Kys0122.1,
+                           # PA_actCop_08_T3 = Kys0122.3,
+                           PA_descriptiveNorm_02_T1 = Kys0107.1,
+                           PA_descriptiveNormparents_02_T3 = Kys0107.3,
+                           PA_descriptiveNorm_01_T1 = Kys0106.1,
+                           PA_descriptiveNorm_01_T3 = Kys0106.3,
                            PA_controlled_01_T1 = Kys0080.1,
                            PA_controlled_01_T3 = Kys0080.3,
                            PA_controlled_02_T1 = Kys0081.1,
                            PA_controlled_02_T3 = Kys0081.3,
                            PA_controlled_03_T1 = Kys0083.1,
                            PA_controlled_03_T3 = Kys0083.3,
-                           PA_frqbct_01_T1 = Kys0138.1,
-                           PA_frqbct_01_T3 = Kys0138.3,
-                           PA_frqbct_02_T1 = Kys0139.1,
-                           PA_frqbct_02_T3 = Kys0139.3,
-                           PA_frqbct_03_T1 = Kys0140.1,
-                           PA_frqbct_03_T3 = Kys0140.3,
-                           PA_frqbct_04_T1 = Kys0141.1,
-                           PA_frqbct_04_T3 = Kys0141.3,
-                           PA_frqbct_05_T1 = Kys0142.1,
-                           PA_frqbct_05_T3 = Kys0142.3,
-                           PA_frqbct_06_T1 = Kys0143.1,
-                           PA_frqbct_06_T3 = Kys0143.3,
-                           PA_frqbct_07_T1 = Kys0144.1,
-                           PA_frqbct_07_T3 = Kys0144.3,
-                           PA_frqbct_08_T1 = Kys0145.1,
-                           PA_frqbct_08_T3 = Kys0145.3,
-                           PA_frqbct_09_T1 = Kys0146.1,
-                           PA_frqbct_09_T3 = Kys0146.3,
+                           PA_frequencyDependentBCT_01_T1 = Kys0138.1,
+                           PA_frequencyDependentBCT_01_T3 = Kys0138.3,
+                           PA_frequencyDependentBCT_02_T1 = Kys0139.1,
+                           PA_frequencyDependentBCT_02_T3 = Kys0139.3,
+                           PA_frequencyDependentBCT_03_T1 = Kys0140.1,
+                           PA_frequencyDependentBCT_03_T3 = Kys0140.3,
+                           PA_frequencyDependentBCT_04_T1 = Kys0141.1,
+                           PA_frequencyDependentBCT_04_T3 = Kys0141.3,
+                           PA_frequencyDependentBCT_05_T1 = Kys0142.1,
+                           PA_frequencyDependentBCT_05_T3 = Kys0142.3,
+                           PA_frequencyDependentBCT_06_T1 = Kys0143.1,
+                           PA_frequencyDependentBCT_06_T3 = Kys0143.3,
+                           PA_frequencyDependentBCT_07_T1 = Kys0144.1,
+                           PA_frequencyDependentBCT_07_T3 = Kys0144.3,
+                           PA_frequencyDependentBCT_08_T1 = Kys0145.1,
+                           PA_frequencyDependentBCT_08_T3 = Kys0145.3,
+                           PA_frequencyDependentBCT_09_T1 = Kys0146.1,
+                           PA_frequencyDependentBCT_09_T3 = Kys0146.3,
                            PA_goal_01_T1 = Kys0147.1,
                            PA_goal_01_T3 = Kys0147.3,
                            PA_autonomous_01_T1 = Kys0087.1,
@@ -325,8 +328,8 @@ d <- lmi %>% dplyr::select(id = ID,
                            PA_autonomous_02_T3 = Kys0088.3,
                            PA_autonomous_03_T1 = Kys0090.1,
                            PA_autonomous_03_T3 = Kys0090.3,
-                           PA_inorm_01_T1 = Kys0108.1,
-                           PA_inorm_01_T3 = Kys0108.3,
+                           PA_injunctiveNorm_01_T1 = Kys0108.1,
+                           PA_injunctiveNorm_01_T3 = Kys0108.3,
                            PA_autonomous_04_T1 = Kys0089.1,
                            PA_autonomous_04_T3 = Kys0089.3,
                            PA_autonomous_05_T1 = Kys0092.1,
@@ -387,18 +390,16 @@ d <- lmi %>% dplyr::select(id = ID,
                            PA_opportunitiesReverseCoded_06_T3 = Kys0103.3,
                            PA_opportunitiesReverseCoded_08_T1 = Kys0105.1,
                            # No answers or not asked T3: PA_opportunitiesReverseCoded_08_T3 = Kys0105.3,
-                           PA_pbc_01_T1 = Kys0125.1,
-                           PA_pbc_01_T3 = Kys0125.3,
-                           PA_pbc_03_T1 = Kys0127.1,
-                           PA_pbc_03_T3 = Kys0127.3,
-                           PA_pbcReverseCoded_02_T1 = Kys0126.1,
-                           PA_pbcReverseCoded_02_T3 = Kys0126.3,
+                           PA_perceivedBehaviouralControl_01_T1 = Kys0125.1,
+                           PA_perceivedBehaviouralControl_01_T3 = Kys0125.3,
+                           PA_perceivedBehaviouralControl_03_T1 = Kys0127.1,
+                           PA_perceivedBehaviouralControl_03_T3 = Kys0127.3,
+                           PA_perceivedBehaviouralControlReverseCoded_02_T1 = Kys0126.1,
+                           PA_perceivedBehaviouralControlReverseCoded_02_T3 = Kys0126.3,
                            PA_selfefficacy_01_T1 = Kys0123.1,
                            PA_selfefficacy_01_T3 = Kys0123.3,
                            PA_selfefficacyReverseCoded_02_T1 = Kys0124.1,
                            PA_selfefficacyReverseCoded_02_T3 = Kys0124.3,
-                           paAccelerometer_T1 = LiikuntaT1_ka,
-                           paAccelerometer_T3 = LiikuntaT3_ka,
                            padaysLastweek_T1 = Kys0045.1,
                            padaysLastweek_T3 = Kys0045.3,
                            pafreqUsually_T1 = Kys0048.1,
@@ -409,14 +410,14 @@ d <- lmi %>% dplyr::select(id = ID,
                            pahrsUsually_T3 = Kys0049.3,
                            paminLastweek_T1 = Kys0047.1,
                            paminLastweek_T3 = Kys0047.3,
-                           SB_dnorm_01_T1 = Kys0178.1,
-                           SB_dnorm_01_T3 = Kys0178.3,
-                           SB_dnorm_02_T1 = Kys0179.1,
-                           SB_dnorm_02_T3 = Kys0179.3,
-                           SB_inorm_01_T1 = Kys0180.1,
-                           SB_inorm_01_T3 = Kys0180.3,
-                           SB_inorm_02_T1 = Kys0181.1,
-                           SB_inorm_02_T3 = Kys0181.3,
+                           SB_descriptiveNorm_01_T1 = Kys0178.1,
+                           SB_descriptiveNorm_01_T3 = Kys0178.3,
+                           SB_descriptiveNorm_02_T1 = Kys0179.1,
+                           SB_descriptiveNorm_02_T3 = Kys0179.3,
+                           SB_injunctiveNorm_01_T1 = Kys0180.1,
+                           SB_injunctiveNorm_01_T3 = Kys0180.3,
+                           SB_injunctiveNorm_02_T1 = Kys0181.1,
+                           SB_injunctiveNorm_02_T3 = Kys0181.3,
                            SB_intention_01_T1 = Kys0187.1,
                            SB_intention_01_T3 = Kys0187.3,
                            SB_intention_02_T1 = Kys0188.1,
@@ -439,16 +440,16 @@ d <- lmi %>% dplyr::select(id = ID,
                            SB_outcomeExpectations_06_T3 = Kys0176.3,
                            SB_outcomeExpectationsNegative_07_T1 = Kys0177.1,
                            SB_outcomeExpectationsNegative_07_T3 = Kys0177.3,
-                           SB_sePbc_01_T1 = Kys0182.1,
-                           SB_sePbc_01_T3 = Kys0182.3,
-                           SB_sePbc_02_T1 = Kys0183.1,
-                           SB_sePbc_02_T3 = Kys0183.3,
-                           SB_sePbc_03_T1 = Kys0184.1,
-                           SB_sePbc_03_T3 = Kys0184.3,
-                           SB_sePbc_04_T1 = Kys0185.1,
-                           SB_sePbc_04_T3 = Kys0185.3,
-                           SB_sePbc_05_T1 = Kys0186.1,
-                           SB_sePbc_05_T3 = Kys0186.3,
+                           SB_selfEfficacyperceivedBehaviouralControl_01_T1 = Kys0182.1,
+                           SB_selfEfficacyperceivedBehaviouralControl_01_T3 = Kys0182.3,
+                           SB_selfEfficacyperceivedBehaviouralControl_02_T1 = Kys0183.1,
+                           SB_selfEfficacyperceivedBehaviouralControl_02_T3 = Kys0183.3,
+                           SB_selfEfficacyperceivedBehaviouralControl_03_T1 = Kys0184.1,
+                           SB_selfEfficacyperceivedBehaviouralControl_03_T3 = Kys0184.3,
+                           SB_selfEfficacyperceivedBehaviouralControl_04_T1 = Kys0185.1,
+                           SB_selfEfficacyperceivedBehaviouralControl_04_T3 = Kys0185.3,
+                           SB_selfEfficacyperceivedBehaviouralControl_05_T1 = Kys0186.1,
+                           SB_selfEfficacyperceivedBehaviouralControl_05_T3 = Kys0186.3,
                            sitLieAccelerometer_T1 = MaIsT1_ka,
                            sitLieAccelerometer_T3 = MaIsT3_ka,
                            symptom_neckShoulderPain_T1 = Kys0031.1,
@@ -467,24 +468,84 @@ d <- lmi %>% dplyr::select(id = ID,
                            symptom_headAche_T3 = Kys0037.3,
                            symptom_tirednessFaintness_T1 = Kys0038.1,
                            symptom_tirednessFaintness_T3 = Kys0038.3,
-                           PA_actplan_01_T1 = Kys0115.1,
-                           PA_actplan_02_T1 = Kys0116.1,
-                           PA_actplan_03_T1 = Kys0117.1,
-                           PA_actplan_04_T1 = Kys0118.1,
-                           PA_copplan_01_T1 = Kys0119.1,
-                           PA_copplan_02_T1 = Kys0120.1,
-                           PA_copplan_03_T1 = Kys0121.1,
-                           PA_copplan_04_T1 = Kys0122.1,
-                           PA_actplan_01_T3 = Kys0115.3,
-                           PA_actplan_02_T3 = Kys0116.3,
-                           PA_actplan_03_T3 = Kys0117.3,
-                           PA_actplan_04_T3 = Kys0118.3,
-                           PA_copplan_01_T3 = Kys0119.3,
-                           PA_copplan_02_T3 = Kys0120.3,
-                           PA_copplan_03_T3 = Kys0121.3,
-                           PA_copplan_04_T3 = Kys0122.3,
-                           sitBreaks_T1 = YlosT1_ka,
-                           sitBreaks_T3 = YlosT3_ka
+                           PA_actionPlanning_01_T1 = Kys0115.1,
+                           PA_actionPlanning_02_T1 = Kys0116.1,
+                           PA_actionPlanning_03_T1 = Kys0117.1,
+                           PA_actionPlanning_04_T1 = Kys0118.1,
+                           PA_copingPlanning_01_T1 = Kys0119.1,
+                           PA_copingPlanning_02_T1 = Kys0120.1,
+                           PA_copingPlanning_03_T1 = Kys0121.1,
+                           PA_copingPlanning_04_T1 = Kys0122.1,
+                           PA_actionPlanning_01_T3 = Kys0115.3,
+                           PA_actionPlanning_02_T3 = Kys0116.3,
+                           PA_actionPlanning_03_T3 = Kys0117.3,
+                           PA_actionPlanning_04_T3 = Kys0118.3,
+                           PA_copingPlanning_01_T3 = Kys0119.3,
+                           PA_copingPlanning_02_T3 = Kys0120.3,
+                           PA_copingPlanning_03_T3 = Kys0121.3,
+                           PA_copingPlanning_04_T3 = Kys0122.3,
+                           mvpaAccelerometer_T1 = ReRaT1_ka,
+                           mvpaAccelerometer_T3 = ReRaT3_ka,
+                           lpaAccelerometer_T1 = KevytT1_ka,
+                           lpaAccelerometer_T3 = KevytT3_ka,
+                           mpaAccelerometer_T1 = ReipasT1_ka,
+                           mpaAccelerometer_T3 = ReipasT3_ka,
+                           vpaAccelerometer_T1 = RasittavaT1_ka,
+                           vpaAccelerometer_T3 = RasittavaT3_ka,
+                           sitBreaksAccelerometer_T1 = YlosT1_ka,
+                           sitBreaksAccelerometer_T3 = YlosT3_ka,
+                           standingAccelerometer_T1 = SeisooT1_ka,
+                           standingAccelerometer_T3 = SeisooT3_ka,
+                           walkStepsAccelerometer_T1 = AskelT1_ka,
+                           walkStepsAccelerometer_T3 = AskelT3_ka,
+                           runStepsAccelerometer_T1 = JuoksuT1_ka,
+                           runStepsAccelerometer_T3 = JuoksuT3_ka,
+                           weartimeAccelerometer_T1 = SummaT1_ka,
+                           weartimeAccelerometer_T3 = SummaT3_ka,
+                           SB_avgDailySelfRepSittingHoursLastWeekWeekday_T1 = Kys0159.1,
+                           SB_avgDailySelfRepSittingHoursLastWeekWeekday_T3 = Kys0159.3,
+                           SB_avgDailySelfRepSittingMinutesLastWeekWeekday_T1 = Kys0160.1,
+                           SB_avgDailySelfRepSittingMinutesLastWeekWeekday_T3 = Kys0160.3,
+                           SB_avgDailySelfRepSittingHoursLastWeekWeekend_T1 = Kys0161.1,
+                           SB_avgDailySelfRepSittingHoursLastWeekWeekend_T3 = Kys0161.3,
+                           SB_avgDailySelfRepSittingMinutesLastWeekWeekend_T1 = Kys0162.1,
+                           SB_avgDailySelfRepSittingMinutesLastWeekWeekend_T3 = Kys0162.3,
+                           SB_selfRepSittingMinutesDuringClass_T1 = Kys0163.1,
+                           SB_selfRepSittingMinutesDuringClass_T3 = Kys0163.3,
+                           SB_selfRepSitbreaksDuringClass_T1 = Kys0164.1,
+                           SB_selfRepSitbreaksDuringClass_T3 = Kys0164.3,
+                           SB_selfRepSitbreaksTVDVD_T1 = Kys0165.1,
+                           SB_selfRepSitbreaksTVDVD_T3 = Kys0165.3,
+                           SB_selfRepSitbreaksHomeComputer_T1 = Kys0166.1,
+                           SB_selfRepSitbreaksHomeComputer_T3 = Kys0166.3,
+                           SB_selfRepSitbreaksWithFriends_T1 = Kys0167.1,
+                           SB_selfRepSitbreaksWithFriends_T3 = Kys0167.3,
+                           SB_selfRepSitbreaksWorkPlacement_T1 = Kys0168.1,
+                           SB_selfRepSitbreaksWorkPlacement_T3 = Kys0168.3,
+                           SB_selfRepSitbreaksDidNotSit30min_T1 = Kys0169.1,
+                           SB_selfRepSitbreaksDidNotSit30min_T3 = Kys0169.3,
+                           SB_perceivedTooMuchSitting_T1 = Kys0170.1,
+                           SB_perceivedTooMuchSitting_T3 = Kys0170.3,
+                           SB_teachersProvideOpportunities_T1 = Kys0200.1,
+                           SB_teachersProvideOpportunities_T3 = Kys0200.3,
+                           SB_teachersInterruptSitting_T1 = Kys0201.1,
+                           SB_teachersInterruptSitting_T3 = Kys0201.3,
+                           SB_classesProvideOpportunities_T1 = Kys0202.1,
+                           SB_classesProvideOpportunities_T3 = Kys0202.3,
+                           SB_classesInterruptSitting_T1 = Kys0203.1,
+                           SB_classesInterruptSitting_T3 = Kys0203.3,
+                           groupSupportsMe_T1 = Kys0215.1,
+                           groupSupportsMe_T3 = Kys0215.3,
+                           groupListensToMe_T1 = Kys0216.1,
+                           groupListensToMe_T3 = Kys0216.3,
+                           groupUnderstandsMe_T1 = Kys0217.1,
+                           groupUnderstandsMe_T3 = Kys0217.3,
+                           groupValuesMe_T1 = Kys0218.1,
+                           groupValuesMe_T3 = Kys0218.3,
+                           groupFeelsSafe_T1 = Kys0219.1,
+                           groupFeelsSafe_T3 = Kys0219.3,
+                           weartime_min4d10h_T1 = min4d10hT1,
+                           weartime_min4d10h_T3 = min4d10hT3
 )
 
 # Reverse coded items to normal: 
@@ -493,13 +554,11 @@ d <- d %>% dplyr::mutate_at(dplyr::vars(contains("ReverseCoded_")), funs(8 - .))
 
 # To check:
 # d %>% dplyr::select(contains("ReverseCoded_")), contains("Rev")) %>% View
-identical(as.numeric(8 - lmi$Kys0154.1), as.numeric(d$big5extReverseCoded_02_T1))
+identical(as.numeric(8 - lmi$Kys0154.1), as.numeric(d$big5extraversionReverseCoded_02_T1))
 identical(as.numeric(8 - lmi$Kys0100.1), as.numeric(d$PA_opportunitiesReverseCoded_03_T1))
 
 # Group variable has empty missings
 d <- d %>% dplyr::mutate(group = ifelse(group == "", NA, group))
-
-# Create grouping variable, which indicates  
 
 # Fix intervention and gender variables
 d <- d %>% dplyr::mutate(intervention = ifelse(intervention == 1, 1, 0),
@@ -509,7 +568,15 @@ d <- d %>% dplyr::mutate(intervention = ifelse(intervention == 1, 1, 0),
                          school = factor(school, levels = c("1", "2", "3", "4", "5")))
 
 # Create the self-reported PA time variable
-d <- d %>% dplyr::mutate(paLastweek_T1 = (pahrsLastweek_T1 * 60) + ifelse(paminLastweek_T1 == 2, 30, 0))
+d <- d %>% dplyr::mutate(leisuretimeMvpaHoursLastweek_T1 = ((pahrsLastweek_T1 * 60) + ifelse(paminLastweek_T1 == 2, 30, 0)) / 60,
+                         leisuretimeMvpaHoursLastweek_T3 = ((pahrsLastweek_T3 * 60) + ifelse(paminLastweek_T3 == 2, 30, 0)) / 60 #,
+                         # mvpaAccelerometer_T1 = mvpaAccelerometer_T1 / 60, # Changes to hours reverted, as it leads to problems in making tables.
+                         # mvpaAccelerometer_T3 = mvpaAccelerometer_T3 / 60,
+                         # weartimeAccelerometer_T1 = weartimeAccelerometer_T1 /60,
+                         # weartimeAccelerometer_T3 = weartimeAccelerometer_T3 / 60,
+                         # sitLieAccelerometer_T1 = sitLieAccelerometer_T1 / 60,
+                         # sitLieAccelerometer_T3 = sitLieAccelerometer_T3 / 60
+)
 
 # Insert track variable with those who answered "other" with one of the actual category labels given the appropriate category:
 track <- lmi %>% dplyr::select(Kys0016.1, Kys0017.1) %>% dplyr::mutate(
@@ -525,8 +592,36 @@ track <- lmi %>% dplyr::select(Kys0016.1, Kys0017.1) %>% dplyr::mutate(
 d <- bind_cols(d, track)
 
 # Separate variables for scale-creation purposes
-dT1 <- d %>% dplyr::select(contains("T1"))
-dT3 <- d %>% dplyr::select(contains("T3"))
+dT1 <- d %>% dplyr::select(contains("T1", ignore.case = FALSE))
+dT3 <- d %>% dplyr::select(contains("T3", ignore.case = FALSE))
+
+# TEMPORARILY EXTRACTED MAKESCALES FROM https://raw.githubusercontent.com/Matherion/userfriendlyscience/master/R/makeScales.R
+
+makeScales_NEW <- function(dat, scales, append=TRUE) {
+  resDat <- dat[, FALSE];
+  for (currentScale in 1:length(scales)) {
+    if (length(unlist(scales[currentScale])) > 1) {
+      resDat[[names(scales[currentScale])]] <-
+        rowMeans(dat[, unlist(scales[currentScale])], na.rm=TRUE);
+      resDat[[names(scales[currentScale])]] <-
+        ifelse(is.nan(resDat[[names(scales[currentScale])]]),
+               NA,
+               resDat[[names(scales[currentScale])]]);
+      attributes(resDat[[names(scales[currentScale])]])$scale_item_names <-
+        unname(unlist(scales[currentScale]));
+    }
+    else if (length(unlist(scales[currentScale])) == 1) {
+      resDat[[names(scales[currentScale])]] <- dat[[unlist(scales[currentScale])]];
+      attributes(resDat[[names(scales[currentScale])]])$scale_item_names <-
+        unname(unlist(scales[currentScale]));
+    }
+  }
+  if (append) {
+    return(cbind(dat, resDat));
+  } else {
+    return(resDat);
+  }
+}
 
 # Create T1 scales
 
@@ -535,77 +630,77 @@ scales_T1 <- list(big5agreeableness_T1 = grep('big5agreeableness', names(dT1), v
                   big5extraversion_T1 = grep('big5extraversion', names(dT1), value = TRUE),
                   big5neuroticism_T1 = grep('big5neuroticism', names(dT1), value = TRUE),
                   big5openness_T1 = grep('big5openness', names(dT1), value = TRUE),
-                  PA_actCop_T1 = grep('PA_actCop', names(dT1), value = TRUE),
-                  PA_agrbct_T1 = grep('PA_agrbct', names(dT1), value = TRUE),
+                  # PA_actCop_T1 = grep('PA_actCop', names(dT1), value = TRUE), # Action and coping planning are separate in data
+                  PA_agreementDependentBCT_T1 = grep('PA_agreementDependentBCT', names(dT1), value = TRUE),
                   PA_amotivation_T1 = grep('PA_amotivation', names(dT1), value = TRUE),
                   PA_autonomous_T1 = grep('PA_autonomous', names(dT1), value = TRUE),
                   PA_controlled_T1 = grep('PA_controlled', names(dT1), value = TRUE),
-                  PA_dnorm_T1 = grep('PA_dnorm', names(dT1), value = TRUE),
-                  PA_frqbct_T1 = grep('PA_frqbct', names(dT1), value = TRUE),
+                  PA_descriptiveNorm_T1 = grep('PA_descriptiveNorm', names(dT1), value = TRUE),
+                  PA_frequencyDependentBCT_T1 = grep('PA_frequencyDependentBCT', names(dT1), value = TRUE),
                   PA_goal_T1 = grep('PA_goal', names(dT1), value = TRUE),
-                  PA_inorm_T1 = grep('PA_inorm', names(dT1), value = TRUE),
+                  PA_injunctiveNorm_T1 = grep('PA_injunctiveNorm', names(dT1), value = TRUE),
                   PA_intention_T1 = grep('PA_intention', names(dT1), value = TRUE),
                   PA_outcomeExpectations_T1 = grep('PA_outcomeExpectations', names(dT1), value = TRUE),
                   PA_opportunities_T1 = grep('PA_opportunities', names(dT1), value = TRUE),
-                  PA_pbc_T1 = grep('PA_pbc', names(dT1), value = TRUE),
+                  PA_perceivedBehaviouralControl_T1 = grep('PA_perceivedBehaviouralControl', names(dT1), value = TRUE),
                   PA_selfefficacy_T1 = grep('PA_selfefficacy', names(dT1), value = TRUE),
-                  SB_dnorm_T1 = grep('SB_dnorm', names(dT1), value = TRUE),
-                  SB_inorm_T1 = grep('SB_inorm', names(dT1), value = TRUE),
+                  SB_descriptiveNorm_T1 = grep('SB_descriptiveNorm', names(dT1), value = TRUE),
+                  SB_injunctiveNorm_T1 = grep('SB_injunctiveNorm', names(dT1), value = TRUE),
                   SB_intention_T1 = grep('SB_intention', names(dT1), value = TRUE),
                   SB_outcomeExpectations_T1 = grep('SB_outcomeExpectations', names(dT1), value = TRUE),
-                  SB_sePbc_T1 = grep('SB_sePbc', names(dT1), value = TRUE),
+                  SB_selfEfficacyperceivedBehaviouralControl_T1 = grep('SB_selfEfficacyperceivedBehaviouralControl', names(dT1), value = TRUE),
                   symptom_T1 = grep('symptom', names(dT1), value = TRUE),
-                  PA_actionplan_T1 = grep('actplan', names(dT1), value = TRUE),
-                  PA_copingplan_T1 = grep('copplan', names(dT1), value = TRUE)
+                  PA_actionplan_T1 = grep('actionPlanning', names(dT1), value = TRUE),
+                  PA_copingplan_T1 = grep('copingPlanning', names(dT1), value = TRUE)
 )
 
 # Append the aggregate variables to the data frame
-newdf <- userfriendlyscience::makeScales(dT1, scales_T1)
+newdf <- makeScales_NEW(dT1, scales_T1)
 
 # Create T3 scales
 
-scales_T3 <- list(big5agreeableness_T3 = grep('big5agr', names(dT3), value = TRUE),
-                  big5conscientiousness_T3 = grep('big5cons', names(dT3), value = TRUE),
-                  big5extraversion_T3 = grep('big5ext', names(dT3), value = TRUE),
-                  big5neuroticism_T3 = grep('big5neur', names(dT3), value = TRUE),
-                  big5openness_T3 = grep('big5open', names(dT3), value = TRUE),
-                  PA_actCop_T3 = grep('PA_actCop', names(dT3), value = TRUE),
-                  PA_agrbct_T3 = grep('PA_agrbct', names(dT3), value = TRUE),
+scales_T3 <- list(big5agreeableness_T3 = grep('big5agreeableness', names(dT3), value = TRUE),
+                  big5conscientiousness_T3 = grep('big5conscientiousness', names(dT3), value = TRUE),
+                  big5extraversion_T3 = grep('big5extraversion', names(dT3), value = TRUE),
+                  big5neuroticism_T3 = grep('big5neuroticism', names(dT3), value = TRUE),
+                  big5openness_T3 = grep('big5openness', names(dT3), value = TRUE),
+                  # PA_actCop_T3 = grep('PA_actCop', names(dT3), value = TRUE), # Action and coping planning are separate in data
+                  PA_agreementDependentBCT_T3 = grep('PA_agreementDependentBCT', names(dT3), value = TRUE),
                   PA_amotivation_T3 = grep('PA_amotivation', names(dT3), value = TRUE),
                   PA_autonomous_T3 = grep('PA_autonomous', names(dT3), value = TRUE),
                   PA_controlled_T3 = grep('PA_controlled', names(dT3), value = TRUE),
-                  PA_dnorm_T3 = grep('PA_dnorm', names(dT3), value = TRUE),
-                  PA_frqbct_T3 = grep('PA_frqbct', names(dT3), value = TRUE),
+                  PA_descriptiveNorm_T3 = grep('PA_descriptiveNorm', names(dT3), value = TRUE),
+                  PA_frequencyDependentBCT_T3 = grep('PA_frequencyDependentBCT', names(dT3), value = TRUE),
                   PA_goal_T3 = grep('PA_goal', names(dT3), value = TRUE),
-                  PA_inorm_T3 = grep('PA_inorm', names(dT3), value = TRUE),
+                  PA_injunctiveNorm_T3 = grep('PA_injunctiveNorm', names(dT3), value = TRUE),
                   PA_intention_T3 = grep('PA_intention', names(dT3), value = TRUE),
                   PA_outcomeExpectations_T3 = grep('PA_outcomeExpectations', names(dT3), value = TRUE),
                   PA_opportunities_T3 = grep('PA_opportunities', names(dT3), value = TRUE),
-                  PA_pbc_T3 = grep('PA_pbc', names(dT3), value = TRUE),
+                  PA_perceivedBehaviouralControl_T3 = grep('PA_perceivedBehaviouralControl', names(dT3), value = TRUE),
                   PA_selfefficacy_T3 = grep('PA_selfefficacy', names(dT3), value = TRUE),
-                  SB_dnorm_T3 = grep('SB_dnorm', names(dT3), value = TRUE),
-                  SB_inorm_T3 = grep('SB_inorm', names(dT3), value = TRUE),
+                  SB_descriptiveNorm_T3 = grep('SB_descriptiveNorm', names(dT3), value = TRUE),
+                  SB_injunctiveNorm_T3 = grep('SB_injunctiveNorm', names(dT3), value = TRUE),
                   SB_intention_T3 = grep('SB_intention', names(dT3), value = TRUE),
                   SB_outcomeExpectations_T3 = grep('SB_outcomeExpectations', names(dT3), value = TRUE),
-                  SB_sePbc_T3 = grep('SB_sePbc', names(dT3), value = TRUE),
+                  SB_selfEfficacyperceivedBehaviouralControl_T3 = grep('SB_selfEfficacyperceivedBehaviouralControl', names(dT3), value = TRUE),
                   symptom_T3 = grep('symptom', names(dT3), value = TRUE),
-                  PA_actionplan_T3 = grep('actplan', names(dT3), value = TRUE),
-                  PA_copingplan_T3 = grep('copplan', names(dT3), value = TRUE)
+                  PA_actionplan_T3 = grep('actionPlanning', names(dT3), value = TRUE),
+                  PA_copingplan_T3 = grep('copingPlanning', names(dT3), value = TRUE)
 )
 
 # Append the aggregate variables to the data frame
-newdf2 <- userfriendlyscience::makeScales(dT3, scales_T3)
+newdf2 <- makeScales_NEW(dT3, scales_T3)
 
 # Take the demographic variables from d, combine with the variables with T1 or T3 in the name. 
 df <- cbind(d[ , c("id", "intervention", "group", "school", "girl", "track")], newdf[, ], newdf2[, ])
 
 # Create composite of self-efficacy and perceived behavioural control
 df <- df %>% rowwise %>%
-  mutate(PA_sePbc_T1 = mean(c(PA_pbc_T1, PA_selfefficacy_T1), na.rm = T),
-         PA_sePbc_T3 = mean(c(PA_pbc_T3, PA_selfefficacy_T3), na.rm = T))
+  mutate(PA_selfEfficacyperceivedBehaviouralControl_T1 = mean(c(PA_perceivedBehaviouralControl_T1, PA_selfefficacy_T1), na.rm = T),
+         PA_selfEfficacyperceivedBehaviouralControl_T3 = mean(c(PA_perceivedBehaviouralControl_T3, PA_selfefficacy_T3), na.rm = T))
 ## Fix the "NaN"s
-df$PA_sePbc_T1[is.nan(df$PA_sePbc_T1)] <- NA
-df$PA_sePbc_T3[is.nan(df$PA_sePbc_T3)] <- NA
+df$PA_selfEfficacyperceivedBehaviouralControl_T1[is.nan(df$PA_selfEfficacyperceivedBehaviouralControl_T1)] <- NA
+df$PA_selfEfficacyperceivedBehaviouralControl_T3[is.nan(df$PA_selfEfficacyperceivedBehaviouralControl_T3)] <- NA
 
 # Create composite of action planning and coping planning
 df <- df %>% rowwise %>%
@@ -669,13 +764,14 @@ motidf2 <- userfriendlyscience::makeScales(regulationVariables_T3, motiscales_T3
 
 df <- cbind(df, motidf1, motidf2)
 
-# Create change scores
+# Create change scores; see https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 t1_vars <- grep("_T1", colnames(df), value = TRUE)
 t1_vars <- grep("big5|fat|paLastweek|PA_opportunitiesReverseCoded_08", t1_vars, value = TRUE, invert = TRUE) # drop variables not in T3
 t3_vars <- grep("_T3", colnames(df), value = TRUE)
-df[, paste0(stringr::str_sub(t1_vars, end = -4), "_diff")] <- df[, t3_vars] - df[, t1_vars]
+df[, paste0(stringr::str_sub(t1_vars, end = -4), "_diff")] <- df[, t3_vars] - df[, t1_vars] # This creates the change score for each variable
 
 # Create a combination of track and school variables
 df <- df %>% dplyr::mutate(trackSchool = paste0(track, school)) 
 
-
+save(df, file = "./data/df_T1_T3.Rdata")
+haven::write_sav(df, path = "./data/df_T1_T3.sav")

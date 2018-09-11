@@ -1039,7 +1039,7 @@ regulations.df <- df %>% dplyr::select(
   PA_intrinsic_02_T3,
   PA_intrinsic_03_T3,
   padaysLastweek_T3,
-  paAccelerometer_T3) %>% 
+  mvpaAccelerometer_T3) %>% 
   dplyr::mutate_at(vars(-(id:girl)), funs(as.numeric))
 
 nItems <- 9
@@ -1112,26 +1112,26 @@ nwAll <- bootnet::estimateNetwork(data1, default="EBICglasso")
 # Create means for filling nodes
 interventionmeans <- regulations.df %>% 
   dplyr::group_by(intervention) %>% 
-  dplyr::select(-paAccelerometer_T3, -padaysLastweek_T3) %>% 
+  dplyr::select(-mvpaAccelerometer_T3, -padaysLastweek_T3) %>% 
   summarise_at(vars(5:(5+nItems-1)),
   funs(mean(., na.rm = TRUE) / 5)) %>% 
   filter(intervention == "1") %>% 
   dplyr::select(-1)
 
 regulations.df_intervention <- regulations.df %>% filter(intervention == 1)
-interventionmeans$Accelerometer <- mean(regulations.df_intervention$paAccelerometer_T3, na.rm = TRUE) / (60*24)
+interventionmeans$Accelerometer <- mean(regulations.df_intervention$mvpaAccelerometer_T3, na.rm = TRUE) / (60*24)
 interventionmeans$`Self-report` <- mean(regulations.df_intervention$padaysLastweek_T3, na.rm = TRUE) / 7
 
 controlmeans <- regulations.df %>% 
   dplyr::group_by(intervention) %>% 
-  dplyr::select(-paAccelerometer_T3, -padaysLastweek_T3) %>% 
+  dplyr::select(-mvpaAccelerometer_T3, -padaysLastweek_T3) %>% 
   summarise_at(vars(5:(5+nItems-1)),
   funs(mean(., na.rm = TRUE) / 5)) %>% 
   filter(intervention == "0") %>% 
   dplyr::select(-1)
 
 regulations.df_control <- regulations.df %>% filter(intervention == 0)
-controlmeans$Accelerometer <- mean(regulations.df_control$paAccelerometer_T3, na.rm = TRUE) / (60*24)
+controlmeans$Accelerometer <- mean(regulations.df_control$mvpaAccelerometer_T3, na.rm = TRUE) / (60*24)
 controlmeans$`Self-report` <- mean(regulations.df_control$padaysLastweek_T3, na.rm = TRUE) / 7
 
 # Find average layout for comparability and plot graphs next to each other
@@ -1244,7 +1244,7 @@ regulations.df <- df %>% dplyr::select(
   PA_integrated_T3, 
   PA_intrinsic_T3,
   padaysLastweek_T3,
-  paAccelerometer_T3) %>% 
+  mvpaAccelerometer_T3) %>% 
   dplyr::mutate_at(vars(-(id:girl)), funs(as.numeric))
 
 # regulations.df <- regulations.df %>% mutate(
@@ -1315,26 +1315,26 @@ nwAll <- bootnet::estimateNetwork(data1, default="EBICglasso")
 # Create means for filling nodes
 interventionmeans <- regulations.df %>% 
   dplyr::group_by(intervention) %>% 
-  dplyr::select(-paAccelerometer_T3, -padaysLastweek_T3) %>% 
+  dplyr::select(-mvpaAccelerometer_T3, -padaysLastweek_T3) %>% 
   summarise_at(vars(5:(5+nItems-1)),
   funs(mean(., na.rm = TRUE) / 5)) %>% 
   filter(intervention == "1") %>% 
   dplyr::select(-1)
 
 regulations.df_intervention <- regulations.df %>% filter(intervention == 1)
-interventionmeans$Accelerometer <- mean(regulations.df_intervention$paAccelerometer_T3, na.rm = TRUE) / (60*24)
+interventionmeans$Accelerometer <- mean(regulations.df_intervention$mvpaAccelerometer_T3, na.rm = TRUE) / (60*24)
 interventionmeans$`Self-report` <- mean(regulations.df_intervention$padaysLastweek_T3, na.rm = TRUE) / 7
 
 controlmeans <- regulations.df %>% 
   dplyr::group_by(intervention) %>% 
-  dplyr::select(-paAccelerometer_T3, -padaysLastweek_T3) %>% 
+  dplyr::select(-mvpaAccelerometer_T3, -padaysLastweek_T3) %>% 
   summarise_at(vars(5:(5+nItems-1)),
   funs(mean(., na.rm = TRUE) / 5)) %>% 
   filter(intervention == "0") %>% 
   dplyr::select(-1)
 
 regulations.df_control <- regulations.df %>% filter(intervention == 0)
-controlmeans$Accelerometer <- mean(regulations.df_control$paAccelerometer_T3, na.rm = TRUE) / (60*24)
+controlmeans$Accelerometer <- mean(regulations.df_control$mvpaAccelerometer_T3, na.rm = TRUE) / (60*24)
 controlmeans$`Self-report` <- mean(regulations.df_control$padaysLastweek_T3, na.rm = TRUE) / 7
 
 # Find average layout for comparability and plot graphs next to each other
@@ -1430,7 +1430,7 @@ cat("Number of edges, which appear different (p<0.05):", sum(nct_results_interve
 
 data <- df %>% 
   dplyr::select(
-    "PA acc" = paAccelerometer_diff,
+    "PA acc" = mvpaAccelerometer_diff,
     "PA selfrep" = padaysLastweek_diff,
     "planning" = PA_actCop_diff,
     "BCT" = PA_frqbct_diff, 
@@ -1528,7 +1528,7 @@ bootnetgraph <- plot(determinants_bootnet,
 
 data <- df %>% 
   dplyr::select(
-    # "PA" = paAccelerometer_diff,
+    # "PA" = mvpaAccelerometer_diff,
     "PA selfrep" = padaysLastweek_diff,
     "planning" = PA_actCop_diff,
     "BCT" = PA_frqbct_diff, 
@@ -1664,7 +1664,7 @@ Changes in accelerometer-measured MVPA seem to be very slightly negatively corre
 ```{r}
 df %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_intention_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -1674,14 +1674,14 @@ df %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 df %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_intention_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_intention_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "intervention group")
 
 df %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_intention_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_intention_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -1689,7 +1689,7 @@ df %>% dplyr::filter(intervention == "0") %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "Nur") %>% 
-  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_intention_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
@@ -1700,7 +1700,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "HRC") %>% 
-  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_intention_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
@@ -1711,7 +1711,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "BA") %>% 
-  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_intention_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
@@ -1722,7 +1722,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "IT") %>% 
-  ggplot(aes(x = PA_intention_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_intention_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
@@ -1731,9 +1731,9 @@ df %>%
   labs(title = "Differences in accelerometer-measured PA and intention: IT", 
        caption = "Legend: red for control group, blue for intervention group")
 
-lm(data = df, paAccelerometer_diff ~ PA_intention_diff + track)
+lm(data = df, mvpaAccelerometer_diff ~ PA_intention_diff + track)
 
-lm(data = df, paAccelerometer_diff ~ PA_intention_diff + track + intervention)
+lm(data = df, mvpaAccelerometer_diff ~ PA_intention_diff + track + intervention)
 
 ```
 
@@ -1742,7 +1742,7 @@ Looks like PA change is affected by track, but the relationship between PA and i
 ```{r}
 df %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -1752,14 +1752,14 @@ df %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 df %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "intervention group")
 
 df %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -1767,7 +1767,7 @@ df %>% dplyr::filter(intervention == "0") %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "Nur") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
@@ -1778,7 +1778,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "HRC") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
@@ -1789,7 +1789,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "BA") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
@@ -1800,7 +1800,7 @@ df %>%
 
 df %>% 
   dplyr::filter(intervention == "1", track == "IT") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (df %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
@@ -1809,9 +1809,9 @@ df %>%
   labs(title = "Differences in accelerometer-measured PA and autonomous: IT", 
        caption = "Legend: red for control group, blue for intervention group")
 
-lm(data = df, paAccelerometer_diff ~ PA_autonomous_diff + track)
+lm(data = df, mvpaAccelerometer_diff ~ PA_autonomous_diff + track)
 
-lm(data = df, paAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
+lm(data = df, mvpaAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
 ```
 
 We see the same effect for autonomous motivation above. One explanation for the zero-to-negative correlation could be, that those who are initially high in PA will regress to the mean (a lower value), whereas those who are initially low, will increase their PA. Same would go for motivation, and if PA shows more fluctuation than motivation, these would seem independent instead of positively correlated. So, only those with moderate T1 values in both PA and Autonomous would be expected to show a correlated increase or decrease. To an extent (and especially in the intervention group), this is what we see when we only retain the middle x% of observations on both of the T1 values, i.e. the median plus/minus x%. 
@@ -1821,19 +1821,19 @@ We see the same effect for autonomous motivation above. One explanation for the 
 correlation_from_middle_x_percent <- function(i) {
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
       df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
   dplyr::filter(moderate_PA_autonomous == 1) %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff)
 
 correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
-ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_low <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[1]
-ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_high <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[2]
 
@@ -1877,19 +1877,19 @@ The same idea does not work for all variables, see self-efficacy and perceived b
 correlation_from_middle_x_percent <- function(i) {
 data_moderate_PA_and_sePbc <- df %>% 
   dplyr::mutate(moderate_PA_sePbc = ifelse(test = 
-      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
       df$PA_sePbc_T1 >= quantile(df$PA_sePbc_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
       df$PA_sePbc_T1 <= quantile(df$PA_sePbc_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
   dplyr::filter(moderate_PA_sePbc == 1) %>% 
-  dplyr::select(paAccelerometer_diff, PA_sePbc_diff)
+  dplyr::select(mvpaAccelerometer_diff, PA_sePbc_diff)
 
 correlation <- cor(data_moderate_PA_and_sePbc, use = "pairwise.complete.obs", method = "kendall")[1, 2]
-ci_low <- cor.test(data_moderate_PA_and_sePbc$paAccelerometer_diff, 
+ci_low <- cor.test(data_moderate_PA_and_sePbc$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_sePbc$PA_sePbc_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[1]
-ci_high <- cor.test(data_moderate_PA_and_sePbc$paAccelerometer_diff, 
+ci_high <- cor.test(data_moderate_PA_and_sePbc$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_sePbc$PA_sePbc_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[2]
 
@@ -1930,19 +1930,19 @@ data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>%
 correlation_from_middle_x_percent <- function(i) {
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-      # df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      # df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
       # df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
   dplyr::filter(moderate_PA_autonomous == 1) %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff)
 
 correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
-ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_low <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[1]
-ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_high <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[2]
 
@@ -1984,19 +1984,19 @@ data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>%
 correlation_from_middle_x_percent <- function(i) {
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-      df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
-      # df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
+      df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]] &
+      # df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]] &
       df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[1]],
       # df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.5 - i, 0.5 + i), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
   dplyr::filter(moderate_PA_autonomous == 1) %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff)
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff)
 
 correlation <- cor(data_moderate_PA_and_autonomous, use = "pairwise.complete.obs", method = "kendall")[1, 2]
-ci_low <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_low <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[1]
-ci_high <- cor.test(data_moderate_PA_and_autonomous$paAccelerometer_diff, 
+ci_high <- cor.test(data_moderate_PA_and_autonomous$mvpaAccelerometer_diff, 
                    data_moderate_PA_and_autonomous$PA_autonomous_diff, 
                    method = "pearson", conf.level = 0.95)$conf.int[2]
 
@@ -2035,14 +2035,14 @@ data.frame(ci_lows, correlations, ci_highs, retained_percentage) %>%
 ### Middle 70%
 
 ```{r}
-quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)
+quantile(df$mvpaAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)
 quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)
 
 
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[2]] &
+    df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[2]] &
     df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.15, 0.85), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
@@ -2052,7 +2052,7 @@ cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -2062,14 +2062,14 @@ data_moderate_PA_and_autonomous %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "Middle 70%: intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -2080,14 +2080,14 @@ data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>%
 ### Middle 60%
 
 ```{r}
-quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)
+quantile(df$mvpaAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)
 quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)
 
 
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[2]] &
+    df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[2]] &
     df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.2, 0.8), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
@@ -2097,7 +2097,7 @@ cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -2107,14 +2107,14 @@ data_moderate_PA_and_autonomous %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "Middle 60%: intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -2125,14 +2125,14 @@ data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>%
 ### Middle 50%
 
 ```{r}
-quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)
+quantile(df$mvpaAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)
 quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)
 
 
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[2]] &
+    df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[2]] &
     df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.25, 0.75), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
@@ -2142,7 +2142,7 @@ cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -2152,14 +2152,14 @@ data_moderate_PA_and_autonomous %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "Middle 50%: intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -2167,7 +2167,7 @@ data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>%
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1", track == "Nur") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "Nur")), color = "red") +
@@ -2178,7 +2178,7 @@ data_moderate_PA_and_autonomous %>%
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1", track == "HRC") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "HRC")), color = "red") +
@@ -2189,7 +2189,7 @@ data_moderate_PA_and_autonomous %>%
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1", track == "BA") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "BA")), color = "red") +
@@ -2200,7 +2200,7 @@ data_moderate_PA_and_autonomous %>%
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1", track == "IT") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0", track == "IT")), color = "red") +
@@ -2209,22 +2209,22 @@ data_moderate_PA_and_autonomous %>%
   labs(title = "Differences in accelerometer-measured PA and autonomous: IT", 
        caption = "Legend: red for control group, blue for intervention group")
 
-lm(data = data_moderate_PA_and_autonomous, paAccelerometer_diff ~ PA_autonomous_diff + track)
+lm(data = data_moderate_PA_and_autonomous, mvpaAccelerometer_diff ~ PA_autonomous_diff + track)
 
-lm(data = data_moderate_PA_and_autonomous, paAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
+lm(data = data_moderate_PA_and_autonomous, mvpaAccelerometer_diff ~ PA_autonomous_diff + track + intervention)
 ```
 
 ### middle 40%
 
 ```{r}
-quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)
+quantile(df$mvpaAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)
 quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)
 
 
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[2]] &
+    df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[2]] &
     df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.3, 0.7), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
@@ -2234,7 +2234,7 @@ cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -2244,14 +2244,14 @@ data_moderate_PA_and_autonomous %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "Middle 40%: intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -2262,14 +2262,14 @@ data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>%
 ### middle 30%
 
 ```{r}
-quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)
+quantile(df$mvpaAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)
 quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)
 
 
 data_moderate_PA_and_autonomous <- df %>% 
   dplyr::mutate(moderate_PA_autonomous = ifelse(test = 
-    df$paAccelerometer_T1 >= quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[1]] &
-      df$paAccelerometer_T1 <= quantile(df$paAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[2]] &
+    df$mvpaAccelerometer_T1 >= quantile(df$mvpaAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[1]] &
+      df$mvpaAccelerometer_T1 <= quantile(df$mvpaAccelerometer_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[2]] &
     df$PA_autonomous_T1 >= quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[1]] &
       df$PA_autonomous_T1 <= quantile(df$PA_autonomous_T1, probs = c(0.35, 0.65), na.rm = TRUE)[[2]],
     yes = 1, no = 0)) %>% 
@@ -2279,7 +2279,7 @@ cat("Number of participants retained:", nrow(data_moderate_PA_and_autonomous))
 
 data_moderate_PA_and_autonomous %>% 
   dplyr::filter(intervention == "1") %>% 
-  ggplot(aes(x = PA_autonomous_diff, y = paAccelerometer_diff)) + 
+  ggplot(aes(x = PA_autonomous_diff, y = mvpaAccelerometer_diff)) + 
   geom_point(color = "blue") + 
   geom_smooth(method = "loess", fill = "blue") +
   geom_point(data = (data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0")), color = "red") +
@@ -2289,14 +2289,14 @@ data_moderate_PA_and_autonomous %>%
        caption = "Legend: red for control group, blue for intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "1") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
   main = "Middle 30%: intervention group")
 
 data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>% 
-  dplyr::select(paAccelerometer_diff, PA_autonomous_diff) %>% 
+  dplyr::select(mvpaAccelerometer_diff, PA_autonomous_diff) %>% 
   corrgram::corrgram(
   lower.panel = corrgram::panel.pie,
   upper.panel = corrgram::panel.conf,
@@ -2308,7 +2308,7 @@ data_moderate_PA_and_autonomous %>% dplyr::filter(intervention == "0") %>%
 
 ```{r meandiffs}
 
-meandiffs <- df %>% select(contains("diff"), -contains("Difficulty"), -contains("Accelerometer"), -contains("sitBreaks"), intervention) %>% 
+meandiffs <- df %>% select(contains("diff"), -contains("Difficulty"), -contains("Accelerometer"), -contains("sitBreaksAccelerometer"), intervention) %>% 
   mutate_at(vars(-intervention), funs(scale(.))) %>% # All variables except intervention to the same scale
   group_by(intervention) %>% 
   summarise_all(funs(mean(., na.rm = TRUE))) %>%
@@ -2338,13 +2338,13 @@ We can rule out Normal for the kurtosis is too large.
 # For the Cullen and Frey graph, this helps: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/paper2JSS.pdf
 # Not sure what happens with raw values, as Weibull assumes non-negatives. Those hence commented out.
 
-# fitdist_input <- df %>% dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector()
+# fitdist_input <- df %>% dplyr::select(mvpaAccelerometer_diff) %>% na.omit(.) %>% as.vector()
 # attributes(fitdist_input) <- NULL
 # fitdist_input <- fitdist_input[[1]]
 # fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
 # mtext("Raw values of differences in accelerometer-measured MVPA", padj = 6, side = 1)
 
-fitdist_input <- df %>% dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+fitdist_input <- df %>% dplyr::select(mvpaAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
 attributes(fitdist_input) <- NULL
 fitdist_input <- fitdist_input[[1]]
 fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
@@ -2352,7 +2352,7 @@ mtext("Absolute values of differences in accelerometer-measured MVPA", padj = 6,
 
 fitdist_input <- df %>% 
   dplyr::filter(intervention == 1) %>% 
-  dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+  dplyr::select(mvpaAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
 attributes(fitdist_input) <- NULL
 fitdist_input <- fitdist_input[[1]]
 fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
@@ -2360,7 +2360,7 @@ mtext("Absolute values of differences in accelerometer-measured MVPA: Interventi
 
 fitdist_input <- df %>% 
   dplyr::filter(intervention == 0) %>% 
-  dplyr::select(paAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+  dplyr::select(mvpaAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
 attributes(fitdist_input) <- NULL
 fitdist_input <- fitdist_input[[1]]
 fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
@@ -2378,13 +2378,13 @@ fitdist_input <- fitdist_input[[1]]
 fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
 mtext("Absolute values of differences in accelerometer-measured sedentary time", padj = 6, side = 1)
 
-# fitdist_input <- df %>% dplyr::select(sitBreaks_diff) %>% na.omit(.) %>% as.vector()
+# fitdist_input <- df %>% dplyr::select(sitBreaksAccelerometer_diff) %>% na.omit(.) %>% as.vector()
 # attributes(fitdist_input) <- NULL
 # fitdist_input <- fitdist_input[[1]]
 # fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
 # mtext("Raw values of differences in accelerometer-measured interruptions to sitting", padj = 6, side = 1)
 
-fitdist_input <- df %>% dplyr::select(sitBreaks_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
+fitdist_input <- df %>% dplyr::select(sitBreaksAccelerometer_diff) %>% na.omit(.) %>% as.vector(.) %>% abs(.)
 attributes(fitdist_input) <- NULL
 fitdist_input <- fitdist_input[[1]]
 fitdistrplus::descdist(fitdist_input, discrete = FALSE, boot = 1000)
@@ -2581,7 +2581,7 @@ nonlinplot_e <- maps %>% ggplot(aes(x = day, y = intervention, group = 1)) +
   # geom_line(aes(x = day, y = movingAverage_intervention), colour = "grey", size = 0.75) +
   # geom_line(aes(x = day, y = movingAverage_control), colour = "darkgrey", size = 0.75) +
   # Plot every 10th point, ignoring the fact that there are missings in between:
-  geom_line(color = "darkgrey", size = 0.5) +
+  geom_line(color = "darkgrey", size = 0.25) +
   geom_point(color = "blue", size = 0.8) +
   geom_smooth(method = "loess") +
   # geom_line(data = maps[!is.na(maps$every10th_control), ],
@@ -2603,8 +2603,24 @@ fullplot <-
  (nonlinplot_c | nonlinplot_d) / 
     nonlinplot_e)
 
-ggsave("nonlinplot.jpg", fullplot, width = 8.5, height = 11)
+ggsave("nonlinplot.jpg", fullplot, width = 8.5, height = 8.5)
 
-sum(!is.na(maps$every10th_intervention))
+```
+
+```{r}
+plot(df$mvpaAccelerometer_T1/60, lmi$SummaT1_ka/60)
+```
+
+# Ergodicity demo
+
+```{r ergodicity-demo}
+
+data <- data.frame(day = 1:100, probability = sample(c(0.6, 1.5), 100, replace = TRUE), sum = 100)
+
+for (i in 2:100){
+data$sum[i] <- data$sum[i - 1] * data$probability[i]
+}
+
+plot(data$sum ~ data$day)
 ```
 
